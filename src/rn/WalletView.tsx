@@ -21,6 +21,7 @@ import { AccountExportedView } from "./AccountExportedView";
 import { SettingsView } from "./SettingsView";
 import { MC } from "../mc";
 import { WorkFunctionResult } from "./MainView";
+import { ResetAppView } from "./ResetAppView";
 
 
 
@@ -53,6 +54,7 @@ export enum WALLET_SCREENS
     RECEIVE          = "Wallet Receive",
     SETTINGS         = "Wallet Settings",
     NO_SUCH_SCREEN   = "Wallet NoSuchScreen",
+    RESET_APP        = "Wallet Reset App",
     };
 
 export type WalletViewAPI =
@@ -285,6 +287,19 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
             );
         }
 
+    function ResetAppScreen(props : any) : JSX.Element
+        {
+        walletNavigation = useNavigation<StackNavigationProp<any>>();
+        useEffect(handleHardwareBackPress);
+        return (
+            <SafeAreaView>
+                <View style={ walletStyles.screenHolder }>
+                    <ResetAppView { ...normalizeProps(props) } onBurgerPressed={ onBurgerPressed }/>
+                </View>
+            </SafeAreaView>
+            );
+        }
+
     return (
         <WalletNavigator.Navigator initialRouteName={ initialScreen } screenOptions={{ animationEnabled: false, gestureEnabled: false, headerShown: false }}>
             <WalletNavigator.Screen name={ WALLET_SCREENS.IMPORT_ACCOUNT   } component={ ImportAccountScreen   }/>
@@ -301,6 +316,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
             <WalletNavigator.Screen name={ WALLET_SCREENS.TX_SENT          } component={ TransactionSentScreen }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.RECEIVE          } component={ ReceiveScreen         }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.SETTINGS         } component={ SettingsScreen        }/>
+            <WalletNavigator.Screen name={ WALLET_SCREENS.RESET_APP        } component={ ResetAppScreen        }/>
         </WalletNavigator.Navigator>
         );
     }

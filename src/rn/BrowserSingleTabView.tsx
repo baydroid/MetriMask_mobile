@@ -5,7 +5,8 @@ import { WebViewNavigation, WebViewNavigationEvent, WebViewErrorEvent } from "re
 import { IconButton, ProgressBar } from 'react-native-paper';
 
 import { commonStyles } from "./common";
-import { DEFAULT_INITIAL_URL } from "../mc";
+import { MC } from "../mc";
+import { parseBrowserUrl } from "../parseBrowserUrl";
 
 
 
@@ -51,6 +52,8 @@ export type BrowserSingleTabViewAPI =
     goToUrl            : (url : string) => void;
     executeJavaScript  : (javaScriptSource : string) => void;
     openInOtherBrowser : () => void;
+    activateMenu       : (renderMenu : () => JSX.Element) => void;
+    dismissMenu        : () => void;
     };
 
 export type BrowserSingleTabViewProps =
@@ -71,11 +74,12 @@ export type BrowserSingleTabViewProps =
 
 export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) : JSX.Element
     {
-    const [ currentUrl, setCurrentUrl ] = useState<string>((props.initialUrl || props.initialUrl == "") ? props.initialUrl : DEFAULT_INITIAL_URL);
+    const [ currentUrl, setCurrentUrl ] = useState<string>((props.initialUrl || props.initialUrl == "") ? props.initialUrl : MC.getMC().storage.browserHomePage);
     const [ urlInputText, setUrlInputText ] = useState<string>(currentUrl);
     const [ canGoBack, setCanGoBack ] = useState<boolean>(false);
     const [ canGoForward, setCanGoForward ] = useState<boolean>(false);
     const [ showLoading, setShowLoading ] = useState<boolean>(false);
+    const [ menu, setMenu ] = useState<(() => JSX.Element) | null>(null);
     const webref = useRef<WebView>(null);
     const titleref = useRef<string>("");
 	const isVisible = useCallback(() : boolean => props.activeTabId === props.ownTabId, [props.activeTabId, props.ownTabId]);
@@ -94,12 +98,24 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
         currentTitle: getCurrentTitle,
         goToUrl: goToUrl,
         executeJavaScript: executeJavaScript,
-        openInOtherBrowser: openInOtherBrowser
+        openInOtherBrowser: openInOtherBrowser,
+        activateMenu: activateMenu,
+        dismissMenu: dismissMenu,
         });
 
     function openInOtherBrowser() : void
         {
         Linking.openURL(currentUrl).then((_ : any) : void => { ; }).catch((_ : any) : void => { ; });
+        }
+
+    function activateMenu(renderMenu : () => JSX.Element) : void
+        {
+        if (!menu && isVisible()) setMenu(() : () => JSX.Element => renderMenu);
+        }
+
+    function dismissMenu() : void
+        {
+        if (menu) setMenu(null);
         }
 
     function getCurrentUrl() : string
@@ -114,12 +130,7 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
 
     function goToUrl(url : string) : void
         {
-        let newUrl = url.trim().toLowerCase();
-        if (!newUrl.startsWith("https://") && !newUrl.startsWith("about:"))
-            {
-            if (newUrl.startsWith("http://")) newUrl = newUrl.substring(7);
-            if (newUrl.indexOf("://") < 0) url = "https://" + newUrl;
-            }
+        url = parseBrowserUrl(url);
         setUrlInputText(url);
         setCurrentUrl(url);
         }
@@ -213,8 +224,9 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
 
     return (
         <View style = { isVisible() ? commonStyles.containingView : browserTabStyles.hiddenContainingView } { ...(Platform.OS === "android" && isVisible() ? { collapsable: false } : { }) }>
+            { menu ? menu() : null }
             <View style = { commonStyles.topBar }>
-                <IconButton style = { commonStyles.icon } size = { 24 } icon = "menu" onPress = { onBurgerPressed }/>
+                <IconButton style = { commonStyles.icon } rippleColor="#FFC0FF" size = { 24 } icon = "menu" onPress = { onBurgerPressed }/>
                 <TextInput
                     style = { browserTabStyles.urlTextInput }
                     onChangeText = { onChangeUrlTextInput }

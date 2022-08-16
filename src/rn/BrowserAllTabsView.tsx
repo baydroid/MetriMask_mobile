@@ -2,35 +2,45 @@ import React, { useState } from "react";
 
 import { BrowserTabContext } from "../BrowserTabContext";
 import BrowserSingleTabView, { BrowserSingleTabViewAPI, BrowserSingleTabViewProps } from "./BrowserSingleTabView";
-import { DEFAULT_INITIAL_URL } from "../mc";
-
-export default BrowserAllTabsView;
+import { MC } from "../mc";
 
 
 
 export abstract class BrowserTabContextBase
     {
-    private static nextTabId = 1;
-
     private viewAPI : BrowserSingleTabViewAPI | null = null;
-    private ownTabId : number = BrowserTabContextBase.nextTabId++;
-    private ownTabKey : string = `Tab_${this.ownTabId}`;
-    private viewProps : BrowserSingleTabViewProps = { key: this.ownTabKey, ownTabId: this.ownTabId, activeTabId: -1 };
+    private ownTabId : number;
+    private ownTabKey : string;
+    private viewProps : BrowserSingleTabViewProps;
+    private loadEndHook : ((tabContext : BrowserTabContextBase) => any) | null = null;;
 
     public abstract onMessageFromHtml(message : string) : void;
     public abstract onLoadStart() : void;
     public abstract onLoadEnd() : void;
     public abstract onTabClosed() : void;
 
-    public constructor(initialUrl : string, injectedJavaScript : string | null = null, injectedJavaScriptBeforeContentLoaded : string | null = null)
+    public constructor(tabId : number, initialUrl : string, injectedJavaScript : string | null = null, injectedJavaScriptBeforeContentLoaded : string | null = null)
         {
-        this.viewProps.initialUrl = initialUrl;
+        this.ownTabId = tabId;
+        this.ownTabKey = `Tab_${this.ownTabId}`;
+        this.viewProps = { key: this.ownTabKey, ownTabId: this.ownTabId, activeTabId: -1, initialUrl: initialUrl };
         if (injectedJavaScript) this.viewProps.injectedJavaScript = injectedJavaScript;
         if (injectedJavaScriptBeforeContentLoaded) this.viewProps.injectedJavaScriptBeforeContentLoaded = injectedJavaScriptBeforeContentLoaded;
+        this.viewProps.onMessage = (msg : string) : void => this.onMessageFromHtml(msg);
+        this.viewProps.onLoadStart = () : void => this.onLoadStart();
+        this.viewProps.onLoadEnd = () : void => this.handleLoadEnd();
         this.viewProps.getApi = (api : BrowserSingleTabViewAPI) : void => { this.viewAPI = api; };
-        this.viewProps.onMessage = (msg : string) : void => { this.onMessageFromHtml(msg); };
-        this.viewProps.onLoadStart = () : void => { this.onLoadStart(); };
-        this.viewProps.onLoadEnd = () : void => { this.onLoadEnd(); };
+        }
+
+    public hookLoadEnd(onLoadEnd : ((tabContext : BrowserTabContextBase) => any) | null) : void
+        {
+        this.loadEndHook = onLoadEnd;
+        }
+
+    public handleLoadEnd() : void
+        {
+        this.onLoadEnd();
+        if (this.loadEndHook) this.loadEndHook(this);
         }
 
     public openInOtherBrowser() : void
@@ -89,6 +99,16 @@ export abstract class BrowserTabContextBase
         this.viewAPI && this.viewAPI.executeJavaScript(javaScriptSource);
         }
 
+    public activateMenu(renderMenu : () => JSX.Element) : void
+        {
+        this.viewAPI && this.viewAPI.activateMenu(renderMenu);
+        }
+
+    public dismissMenu() : void
+        {
+        this.viewAPI && this.viewAPI.dismissMenu();
+        }
+
     public get tabId() : number
         {
         return this.ownTabId;
@@ -118,7 +138,8 @@ export function browserSetInitialUrl(url : string) : void
     initialUrl = url;
     }
 
-let initialUrl : string = DEFAULT_INITIAL_URL;
+let initialUrl : string = "";
+let firstTab : BrowserTabContext | null = null;
 
 export type BrowserAllTabsViewAPI =
     {
@@ -140,20 +161,23 @@ export type BrowserAllTabsViewAPI =
     activateTabAtIndex : (index : number) => void;
     closeTabAtIndex    : (index : number) => void;
     openInOtherBrowser : () => void;
+    activateMenu       : (renderMenu : () => JSX.Element) => void;
+    dismissMenu        : () => void;
     };
 
 export type BrowserAllTabsViewProps =
     {
-    hide?            : boolean;
-    getApi?          : (api : BrowserAllTabsViewAPI) => any;
-    onBurgerPressed? : () => any;
-    onNewCanGoState? : (canGoForward : boolean, canGoBackward : boolean) => any;
-    onNewTabCount?   : (tabCount : number) => any;
+    hide?             : boolean;
+    getApi?           : (api : BrowserAllTabsViewAPI) => any;
+    onBurgerPressed?  : () => any;
+    onNewCanGoState?  : (canGoForward : boolean, canGoBackward : boolean) => any;
+    onNewTabCount?    : (tabCount : number) => any;
+    allTabsOnLoadEnd? : (tabContext : BrowserTabContextBase) => any;
     };
 
-export function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JSX.Element | null
+export default function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JSX.Element | null
     {
-    const [ tabArray, setTabArray ] = useState<BrowserTabContextBase[]>([ new BrowserTabContext(initialUrl) ]);
+    const [ tabArray, setTabArray ] = useState<BrowserTabContextBase[]>([ provideFirstTab() ]);
     const [ activeTabIndex, setActiveTabIndex ] = useState<number>(0);
     const [ showActiveTab, setShowActiveTab ] = useState<boolean>(!props.hide);
 
@@ -176,8 +200,27 @@ export function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JSX.Elemen
         activateTabAtIndex: activateTabAtIndex,
         closeTabAtIndex: closeTabAtIndex,
         activeTabIndex: () => activeTabIndex,
-        openInOtherBrowser: openInOtherBrowser
+        openInOtherBrowser: openInOtherBrowser,
+        activateMenu: activateMenu,
+        dismissMenu: dismissMenu,
         });
+
+    function provideFirstTab() : BrowserTabContext
+        {
+        if (initialUrl == "") initialUrl = MC.getMC().storage.browserHomePage;
+        if (!firstTab) firstTab = new BrowserTabContext(MC.getUniqueInt(), initialUrl);
+        return firstTab;
+        }
+
+    function activateMenu(renderMenu : () => JSX.Element) : void
+        {
+        if (activeTabIndex >= 0) tabArray[activeTabIndex].activateMenu(renderMenu);
+        }
+
+    function dismissMenu() : void
+        {
+        if (activeTabIndex >= 0) tabArray[activeTabIndex].dismissMenu();
+        }
 
     function openInOtherBrowser() : void
         {
@@ -220,9 +263,9 @@ export function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JSX.Elemen
             activateTabAtIndex(iTabToActivate);
         else
             {
-            const newTabArray : BrowserTabContextBase[] = [ ];
-            for (let i = 0; i < tabArray.length; i++) newTabArray.push(tabArray[i]);
-            newTabArray.push(tabContext);
+            const newTabArray : BrowserTabContextBase[] = Array(tabArray.length + 1);
+            for (let i = 0; i < tabArray.length; i++) newTabArray[i] = tabArray[i];
+            newTabArray[tabArray.length] = tabContext;
             setTabArray(newTabArray);
             setActiveTabIndex(newTabArray.length - 1);
             notifyCanGoState(tabContext.canGoForward, tabContext.canGoBackward);
@@ -282,13 +325,14 @@ export function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JSX.Elemen
     function closeTabAtIndex(index : number) : void
         {
         if (index < 0 || index >= tabArray.length) return;
-        const newTabArray : BrowserTabContextBase[] = [ ];
+        const newTabArray : BrowserTabContextBase[] = Array(tabArray.length - 1);
+        let j = 0;
         for (let i = 0; i < tabArray.length; i++)
             {
             if (i == index)
                 tabArray[i].browserAllTabsView_closedTab();
             else
-                newTabArray.push(tabArray[i]);
+                newTabArray[j++] = tabArray[i];
             }
         let newActiveTabIndex = activeTabIndex;
         if (newTabArray.length == 0)
@@ -298,7 +342,11 @@ export function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JSX.Elemen
         setTabArray(newTabArray);
         notifyTabCount(newTabArray.length);
         if (newActiveTabIndex >= 0)
-            activateTabAtIndex(newActiveTabIndex);
+            {
+            const tab : BrowserTabContextBase = newTabArray[newActiveTabIndex];
+            notifyCanGoState(tab.canGoForward, tab.canGoBackward);
+            setActiveTabIndex(newActiveTabIndex);
+            }
         else
             {
             notifyCanGoState(false, false);
@@ -336,9 +384,12 @@ export function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JSX.Elemen
         {
         const atid = showActiveTab ? activeTabId() : -1;
         return tabArray.map((tabContext : BrowserTabContextBase) : JSX.Element =>
-            (
-            <BrowserSingleTabView { ...tabContext.tabViewProps } activeTabId = { atid } onNewCanGoState = { onNewCanGoState } onBurgerPressed = { onBurgerPressed }/>
-            ));
+            {
+            tabContext.hookLoadEnd(props.allTabsOnLoadEnd ? props.allTabsOnLoadEnd : null);
+            return (
+                <BrowserSingleTabView { ...tabContext.tabViewProps } activeTabId = { atid } onNewCanGoState = { onNewCanGoState } onBurgerPressed = { onBurgerPressed }/>
+                );
+            });
         }
 
     return tabArray.length > 0 ? (<>{ renderAllTabs() }</>) : null;

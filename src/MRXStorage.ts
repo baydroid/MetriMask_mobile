@@ -2,8 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { isEmpty, split } from 'lodash';
 
 import { AccountManager } from "./AccountManager";
-import { MC } from './mc';
+import { MC, DEFAULT_INITIAL_URL } from './mc';
 import { DEFAULT_INACTIVITY_TIMEOUT_MILLIS } from "./rn/MainView";
+import { WebHistoryList, WebFavouritesList } from "./rn/BrowserView";
 
 
 
@@ -53,6 +54,30 @@ const TYPE_ACCOUNT_MANAGER : StoredType<AccountManager> =
         }
     };
 
+const TYPE_WEB_FAVOURITES : StoredType<WebFavouritesList> =
+    {
+    toStoredStr: (value : WebFavouritesList) : string =>
+        {
+        return value.toStorageStr();
+        },
+    fromStoredStr: (storedStr : string) : WebFavouritesList =>
+        {
+        return WebFavouritesList.fromStorageStr(storedStr);
+        }
+    };
+
+const TYPE_WEB_HISTORY : StoredType<WebHistoryList> =
+    {
+    toStoredStr: (value : WebHistoryList) : string =>
+        {
+        return value.toStorageStr();
+        },
+    fromStoredStr: (storedStr : string) : WebHistoryList =>
+        {
+        return WebHistoryList.fromStorageStr(storedStr);
+        }
+    };
+
 const TYPE_UINT8ARRAY : StoredType<Uint8Array> =
     {
     toStoredStr: (value : Uint8Array) : string =>
@@ -85,7 +110,6 @@ class StoredItem<ValueType>
 
     public initItem() : Promise<void>
         {
-
         return new Promise<void>((resolve : () => any, reject : (e : any) => any) : void =>
             {
             if (!this.isInitialized)
@@ -131,10 +155,14 @@ class StoredItem<ValueType>
 
 export class MRXStorage
     {
-    private inactivityTimeoutItem = new StoredItem<number>        ("inactivityTimeout", TYPE_NUMBER,          DEFAULT_INACTIVITY_TIMEOUT_MILLIS);
-    private versionItem           = new StoredItem<number>        ("version",           TYPE_NUMBER,          0                                );
-    private saltItem              = new StoredItem<Uint8Array>    ("salt",              TYPE_UINT8ARRAY,      new Uint8Array(0)                );
-    private accountManagerItem    = new StoredItem<AccountManager>("accountManager",    TYPE_ACCOUNT_MANAGER, new AccountManager()             );
+    private inactivityTimeoutItem = new StoredItem<number>           ("inactivityTimeout", TYPE_NUMBER,          DEFAULT_INACTIVITY_TIMEOUT_MILLIS);
+    private versionItem           = new StoredItem<number>           ("version",           TYPE_NUMBER,          0                                );
+    private saltItem              = new StoredItem<Uint8Array>       ("salt",              TYPE_UINT8ARRAY,      new Uint8Array(0)                );
+    private accountManagerItem    = new StoredItem<AccountManager>   ("accountManager",    TYPE_ACCOUNT_MANAGER, new AccountManager()             );
+    private browserHomePageItem   = new StoredItem<string>           ("browserHomePage",   TYPE_STRING,          DEFAULT_INITIAL_URL              );
+    private browserFavouritesItem = new StoredItem<WebFavouritesList>("browserFaourites",  TYPE_WEB_FAVOURITES,  new WebFavouritesList()          );
+    private browserHistoryItem    = new StoredItem<WebHistoryList>   ("browserHistory",    TYPE_WEB_HISTORY,     new WebHistoryList()             );
+    private searchEngineIndexItem = new StoredItem<number>           ("seIndex",           TYPE_NUMBER,          0                                );
 
     public init() : Promise<void>
         {
@@ -146,6 +174,10 @@ export class MRXStorage
                 this.versionItem.initItem(),
                 this.saltItem.initItem(),
                 this.accountManagerItem.initItem(),
+                this.browserHomePageItem.initItem(),
+                this.browserFavouritesItem.initItem(),
+                this.browserHistoryItem.initItem(),
+                this.searchEngineIndexItem.initItem(),
                 ])
             .then((empties : void[]) : void =>
                 {
@@ -155,19 +187,35 @@ export class MRXStorage
             });
         }
 
-    public get inactivityTimeout() : number                          { return this.inactivityTimeoutItem.getValue();      }
-    public set inactivityTimeout(value : number)                     { this.inactivityTimeoutItem.setValue(value);        }
-    public setInactivityTimeout(value : number) : Promise<void>      { return this.inactivityTimeoutItem.setValue(value); }
+    public get inactivityTimeout() : number                                { return this.inactivityTimeoutItem.getValue();      }
+    public set inactivityTimeout(value : number)                           { this.inactivityTimeoutItem.setValue(value);        }
+    public setInactivityTimeout(value : number) : Promise<void>            { return this.inactivityTimeoutItem.setValue(value); }
 
-    public get version() : number                                    { return this.versionItem.getValue();                }
-    public set version(value : number)                               { this.versionItem.setValue(value);                  }
-    public setVersion(value : number) : Promise<void>                { return this.versionItem.setValue(value);           }
+    public get version() : number                                          { return this.versionItem.getValue();                }
+    public set version(value : number)                                     { this.versionItem.setValue(value);                  }
+    public setVersion(value : number) : Promise<void>                      { return this.versionItem.setValue(value);           }
     
-    public get salt() : Uint8Array                                   { return this.saltItem.getValue();                   }
-    public set salt(value : Uint8Array)                              { this.saltItem.setValue(value);                     }
-    public setSalt(value : Uint8Array) : Promise<void>               { return this.saltItem.setValue(value);              }
+    public get salt() : Uint8Array                                         { return this.saltItem.getValue();                   }
+    public set salt(value : Uint8Array)                                    { this.saltItem.setValue(value);                     }
+    public setSalt(value : Uint8Array) : Promise<void>                     { return this.saltItem.setValue(value);              }
 
-    public get accountManager() : AccountManager                     { return this.accountManagerItem.getValue();         }
-    public set accountManager(value : AccountManager)                { this.accountManagerItem.setValue(value);           }
-    public setAccountManager(value : AccountManager) : Promise<void> { return this.accountManagerItem.setValue(value);    }
+    public get accountManager() : AccountManager                           { return this.accountManagerItem.getValue();         }
+    public set accountManager(value : AccountManager)                      { this.accountManagerItem.setValue(value);           }
+    public setAccountManager(value : AccountManager) : Promise<void>       { return this.accountManagerItem.setValue(value);    }
+
+    public get browserHomePage() : string                                  { return this.browserHomePageItem.getValue();        }
+    public set browserHomePage(value : string)                             { this.browserHomePageItem.setValue(value);          }
+    public setBrowserHomePage(value : string) : Promise<void>              { return this.browserHomePageItem.setValue(value);   }
+
+    public get browserFavourites() : WebFavouritesList                     { return this.browserFavouritesItem.getValue();      }
+    public set browserFavourites(value : WebFavouritesList)                { this.browserFavouritesItem.setValue(value);        }
+    public setBrowserFavourites(value : WebFavouritesList) : Promise<void> { return this.browserFavouritesItem.setValue(value); }
+
+    public get browserHistory() : WebHistoryList                           { return this.browserHistoryItem.getValue();         }
+    public set browserHistory(value : WebHistoryList)                      { this.browserHistoryItem.setValue(value);           }
+    public setBrowserHistory(value : WebHistoryList) : Promise<void>       { return this.browserHistoryItem.setValue(value);    }
+
+    public get searchEngineIndex() : number                                { return this.searchEngineIndexItem.getValue();      }
+    public set searchEngineIndex(value : number)                           { this.searchEngineIndexItem.setValue(value);        }
+    public setSearchEngineIndex(value : number) : Promise<void>            { return this.searchEngineIndexItem.setValue(value); }
     }

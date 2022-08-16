@@ -310,7 +310,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                         </View>
                         <View style = {{ flex: 1 }}/>
                         <View style = { accountHomeStyles.containingView }>
-                            <IconButton style = { commonStyles.icon } size = { 24 } icon = "close" onPress = { () : void => onRemoveToken(mrc20) }/>
+                            <IconButton rippleColor="#FFC0FF" style = { commonStyles.icon } size = { 24 } icon = "close" onPress = { () : void => onRemoveToken(mrc20) }/>
                             <View style = {{ flex: 1 }}/>
                         </View>
                     </View>

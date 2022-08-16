@@ -28,7 +28,7 @@ export const BIG_0                     = toBigInteger(0);
 
 
 
-const DEBUG_MODE             = true;
+const DEBUG_MODE             = false;
 const STORAGE_VERSION_NUMBER = 1;
 const CH_0                   = "0".charCodeAt(0);
 const CH_9                   = "9".charCodeAt(0);
@@ -113,7 +113,7 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
     public openUrlInNewTab(url : string) : void
         {
         if (this.allTabsAPI)
-            this.allTabsAPI.activateTab(new BrowserTabContext(url));
+            this.allTabsAPI.activateTab(new BrowserTabContext(MC.getUniqueInt(), url));
         else
             browserSetInitialUrl(url);
         if (this.mainViewAPI) this.mainViewAPI.goToBrowser();
@@ -138,6 +138,11 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
             else
                 this.storage.accountManager.accountLogout();
             }
+        }
+
+    public resetApp() : void
+        {
+        this.mainViewAPI!.resetApp();
         }
 
     public askPermissionToSign(requestingURL : string, askingEntitySelfDescription : string, messageToSign : string, onSigningPermittedDecision : (permittedToSign : boolean) => any) : void

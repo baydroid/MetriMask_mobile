@@ -121,9 +121,9 @@ export class BrowserTabContext extends BrowserTabContextBase
     private lastNotifyStatusChangeReason : string = "";
     private lastNotifyError : string | null = null;
 
-    public constructor(initialUrl : string = "")
+    public constructor(id : number, initialUrl : string = "")
         {
-        super(initialUrl, null, INITIAL_JS);
+        super(id, initialUrl, null, INITIAL_JS);
         this.htmlMessageHandlersByName.set(METRIMASK_CONNECT,        (message : HTMLMessage) : void => this.onHtml_CONNECT(message)        );
         this.htmlMessageHandlersByName.set(METRIMASK_RAW_CALL,       (message : HTMLMessage) : void => this.onHtml_RAW_CALL(message)       );
         this.htmlMessageHandlersByName.set(METRIMASK_SIGN_MESSAGE,   (message : HTMLMessage) : void => this.onHtml_SIGN_MESSAGE(message)   );

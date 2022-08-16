@@ -1,11 +1,11 @@
 import "../../shim.js";
 
 import React, { useEffect } from "react";
-import { StyleSheet, View, Text, Linking } from "react-native";
+import { StyleSheet, View, Text, Linking, Alert } from "react-native";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { ProgressBar, TouchableRipple } from "react-native-paper";
+import { ProgressBar } from "react-native-paper";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { TimeoutHandler } from "usetimeout-react-hook";
 
@@ -14,11 +14,13 @@ import UserInactivity, { UserInactivityAPI } from "../modified_node_modules/reac
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import BrowserView from "./BrowserView";
 import WalletView, { WALLET_SCREENS, WalletViewAPI } from "./WalletView";
-import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, SimpleButton, formatSatoshi, BurgerlessTitleBar } from "./common";
+import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, SimpleButton, formatSatoshi, BurgerlessTitleBar, MenuOption } from "./common";
 import { PermissionToSignView, PermissionToSignViewProps } from "./PermissionToSignView";
 import { PermissionToSendView, PermissionToSendViewProps } from "./PermissionToSendView";
 import { ContractCallParams } from "../WalletManager";
 import { AccountManager } from "../AccountManager";
+import { BigInteger } from "big-integer";
+import { MRXStorage } from "../MRXStorage.js";
 
 
 
@@ -93,6 +95,7 @@ export type MainViewAPI =
     restartUserInactivityTimer     : () => void;
     setUserInactivityTimeoutMillis : (timeoutMillis : number) => void;
     getUserInactivityTimeoutMillis : () => number;
+    resetApp                       : () => void;
     };
 
 const RootDrawerNavigator = createDrawerNavigator();
@@ -115,6 +118,8 @@ export default function MainView() : JSX.Element
     let userActive : boolean = true;
     let inactivityAPI : UserInactivityAPI | null = null;
     let inactivityTimeoutMillis : number = DEFAULT_INACTIVITY_TIMEOUT_MILLIS;
+    let logoutAlertOut : boolean = false;
+    let exitAlertOut : boolean = false;
 
     function getWalletApi(api : WalletViewAPI) : void
         {
@@ -176,10 +181,44 @@ export default function MainView() : JSX.Element
         rootNavigation.navigate(ROOT_SCREENS.BROWSER);
         }
 
+    function askThenLogout() : void
+        {
+        if (!logoutAlertOut)
+            {
+            logoutAlertOut = true;
+            Alert.alert("Lock Wallet", "Confirm locking the wallet",
+                [
+                { text: "Cancel",      onPress: () : void => { logoutAlertOut = false;                     }, style: "cancel" },
+                { text: "Lock Wallet", onPress: () : void => { logoutAlertOut = false; MC.getMC().logout() }                  }
+                ]);
+            }
+        }
+
+    function askThenExit() : void
+        {
+        if (!exitAlertOut)
+            {
+            exitAlertOut = true;
+            Alert.alert("Exit MetriMask", "Are you sure you want to exit?",
+                [
+                { text: "Don't Exit", style: "cancel", onPress: () : void => { exitAlertOut = false;              } },
+                { text: "Exit",                        onPress: () : void => { exitAlertOut = false; MC.exitApp() } }
+                ]);
+            }
+        }
+
     function logout() : void
         {
         MC.getMC().storage.accountManager.accountLogout();
         walletNavigate(WALLET_SCREENS.LOGIN);
+        }
+
+    function resetApp() : void
+        {
+        const storage : MRXStorage = MC.getMC().storage;
+        storage.accountManager.accountLogout();
+        storage.accountManager = new AccountManager();
+        walletNavigate(WALLET_SCREENS.CREATE_ACCOUNT);
         }
 
     function emergencyExit(msg : string) : void
@@ -348,8 +387,6 @@ export default function MainView() : JSX.Element
                         <View style={{ backgroundColor: "#E0FFE0", padding: 6 }}>
                             <Text style={{ color: "#000000" }}>{ emeergencyExitMsg }</Text>
                         </View>
-                        <View style={{ height: 24 }}/>
-                        <SimpleButton text="Exit App" onPress={ () : void => MC.exitApp() }/>
                     </View>
                 </View>
             </SafeAreaView>
@@ -386,7 +423,8 @@ export default function MainView() : JSX.Element
                     showWalletWorkingAsync: showWalletWorkingAsync,
                     restartUserInactivityTimer: restartUserInactivityTimer,
                     setUserInactivityTimeoutMillis: setUserInactivityTimeoutMillis,
-                    getUserInactivityTimeoutMillis: () : number => inactivityTimeoutMillis
+                    getUserInactivityTimeoutMillis: () : number => inactivityTimeoutMillis,
+                    resetApp: resetApp
                     });
                 setUserInactivityTimeoutMillis(MC.getMC().storage.inactivityTimeout);
                 Linking.getInitialURL().then((url : string | null) : void =>
@@ -435,7 +473,7 @@ export default function MainView() : JSX.Element
 
         function renderBalance(am : AccountManager) : JSX.Element | null
             {
-            const bal = am.current.wm.balanceSat;
+            const bal : BigInteger = am.current.wm.balanceSat;
             if (bal.lesser(BIG_0))
                 return null;
             else
@@ -449,15 +487,6 @@ export default function MainView() : JSX.Element
                         </View>
                     </>
                     )
-            }
-
-        function DrawerItem(props : DrawerItemProps) : JSX.Element
-            {
-            return (
-                <TouchableRipple onPress={ props.onPress } rippleColor="#D080D0">
-                    <Text style={{ color: "#000000", paddingTop: 6, paddingBottom: 6, paddingLeft: 24, paddingRight: 0 }}>{ props.label }</Text>
-                </TouchableRipple>
-                );
             }
 
         if (isLoggedIn)
@@ -477,32 +506,35 @@ export default function MainView() : JSX.Element
                     <View style={{ height: 12 }}/>
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={{ height: 18 }}/>
-                    <DrawerItem label="Browser"         onPress={ () : void => navigate(ROOT_SCREENS.BROWSER)                }/>
-                    <DrawerItem label="Account Home"    onPress={ () : void => walletNavigate(WALLET_SCREENS.ACCOUNT_HOME)   }/>
-                    <DrawerItem label="Send"            onPress={ () : void => walletNavigate(WALLET_SCREENS.SEND)           }/>
-                    <DrawerItem label="Receive"         onPress={ () : void => walletNavigate(WALLET_SCREENS.RECEIVE)        }/>
-                    <DrawerItem label="Add MRC20 Token" onPress={ () : void => walletNavigate(WALLET_SCREENS.ADD_TOKEN)      }/>
-                    <DrawerItem label="Add Account"     onPress={ () : void => walletNavigate(WALLET_SCREENS.CREATE_ACCOUNT) }/>
-                    <DrawerItem label="Export Account"  onPress={ () : void => walletNavigate(WALLET_SCREENS.EXPORT_ACCOUNT) }/>
-                    <DrawerItem label="Settings"        onPress={ () : void => walletNavigate(WALLET_SCREENS.SETTINGS)       }/>
-                    <DrawerItem label="Logout"          onPress={ () : void => MC.getMC().logout()                           }/>
-                    <DrawerItem label="Exit"            onPress={ () : void => MC.exitApp()                                  }/>
+                    <MenuOption label="Browser"         icon="web"                 onPress={ () : void => navigate(ROOT_SCREENS.BROWSER)                }/>
+                    <MenuOption label="Account Home"    icon="account"             onPress={ () : void => walletNavigate(WALLET_SCREENS.ACCOUNT_HOME)   }/>
+                    <MenuOption label="Send"            icon="debug-step-out"      onPress={ () : void => walletNavigate(WALLET_SCREENS.SEND)           }/>
+                    <MenuOption label="Receive"         icon="debug-step-into"     onPress={ () : void => walletNavigate(WALLET_SCREENS.RECEIVE)        }/>
+                    <MenuOption label="Add MRC20 Token" icon="cash-plus"           onPress={ () : void => walletNavigate(WALLET_SCREENS.ADD_TOKEN)      }/>
+                    <MenuOption label="Add Account"     icon="account-plus"        onPress={ () : void => walletNavigate(WALLET_SCREENS.CREATE_ACCOUNT) }/>
+                    <MenuOption label="Export Account"  icon="account-arrow-right" onPress={ () : void => walletNavigate(WALLET_SCREENS.EXPORT_ACCOUNT) }/>
+                    <MenuOption label="Settings"        icon="cog-outline"         onPress={ () : void => walletNavigate(WALLET_SCREENS.SETTINGS)       }/>
+                    <MenuOption label="Lock Wallet"     icon="lock"                onPress={ askThenLogout                                              }/>
                 </DrawerContentScrollView>
                 );
             }
         else
+            {
+            const canLogin = mc && mc.storage.accountManager.canLogin;
+            const unlockLabel = canLogin ? "Unlock Wallet" : "Add Account";
+            const unlockIcon = canLogin ? "lock-open-variant" : "account-plus";
             return (
                 <DrawerContentScrollView { ...props }>
                     <BurgerlessTitleBar title="MetriMask"/>
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={{ height: 18 }}/>
-                    <DrawerItem label="Browser" onPress={ () : void => navigate(ROOT_SCREENS.BROWSER) }/>
-                    <DrawerItem label="Login"   onPress={ () : void => navigate(ROOT_SCREENS.WALLET)  }/>
-                    <DrawerItem label="Exit"    onPress={ () : void => MC.exitApp()                   }/>
+                    <MenuOption label="Browser"       icon="web"          onPress={ () : void => navigate(ROOT_SCREENS.BROWSER) }/>
+                    <MenuOption label={ unlockLabel } icon={ unlockIcon } onPress={ () : void => navigate(ROOT_SCREENS.WALLET)  }/>
                 </DrawerContentScrollView>
                 );
+            }
         }
-    
+
     function ShowMainView() : JSX.Element
         {
         return (

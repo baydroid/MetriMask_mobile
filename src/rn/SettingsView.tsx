@@ -54,7 +54,7 @@ export function SettingsView(props : SettingsViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={ { height: 24 } }/>
             <View style={ commonStyles.squeezed }>
-                <Text>Logout after inactive for:</Text>
+                <Text>Lock wallet after inactive for:</Text>
                 <DropDownPicker
                     dropDownContainerStyle={{ borderColor: "#900090" }}
                     style={{ borderColor: "#900090" }}

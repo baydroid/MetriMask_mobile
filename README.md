@@ -103,11 +103,11 @@ Edit android/build.gradle. Add the line
 
 to the esisting buildscript.dependencies section already in the file. I.E. placed like so.
 
-buildscript {
-    dependencies {
-        classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0')
+    buildscript {
+        dependencies {
+            classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0')
+        }
     }
-}
 
 STEP 8)
 
@@ -291,4 +291,6 @@ To build and run the release verion instead use this command
 
     npx react-native run-android --variant=release
 
-Afterwards the APKs can be found in android/app/build/outputs/apk.
+Afterwards the APKs can be found in
+
+    android/app/build/outputs/apk

@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
 import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData } from "react-native";
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
@@ -27,6 +29,8 @@ export function LoginView(props : LoginViewProps) : JSX.Element
     const securePasswordRef = useRef<TextInput>(null);
     const plainPasswordRef = useRef<TextInput>(null);
 
+    const walletNavigation = useNavigation<StackNavigationProp<any>>();
+
     if (props.loginFailure == invalidPasswordNonce && !invalidPassword) setInvalidPassword(true);
     
     function login() : void
@@ -52,6 +56,11 @@ export function LoginView(props : LoginViewProps) : JSX.Element
                     });
                 }
             }
+        }
+
+    function resetApp() : void 
+        {
+        walletNavigation.navigate(WALLET_SCREENS.RESET_APP);
         }
 
     function onEndEditintgPassword(wvEvent : NativeSyntheticEvent<TextInputEndEditingEventData>) : void
@@ -125,7 +134,7 @@ export function LoginView(props : LoginViewProps) : JSX.Element
             {
             return (
                 <>
-                    <View style = { { height: 72 } } />
+                    <View style = { { height: 24 } } />
                     <InvalidMessage text="Invalid Password" />
                 </>
                 );
@@ -136,14 +145,16 @@ export function LoginView(props : LoginViewProps) : JSX.Element
 
     return (
         <View style = { commonStyles.containingView }>
-            <TitleBar title="MetriMask Login" onBurgerPressed={ onBurgerPressed }/>
+            <TitleBar title="Unlock Wallet" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style={{ height: 24 }}/>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>
-                <SimpleButton text="Login" onPress = { () => { login(); } }/>
+                <SimpleButton text="Unlock Wallet" onPress = { () => { login(); } }/>
                 { renderInvalidPassword() }
+                <View style={{ height: 72 }}/>
+                <SimpleButton text="Reset Metrimask" onPress = { () => { resetApp(); } }/>
             </View>
         </View>
         );

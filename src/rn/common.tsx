@@ -4,7 +4,7 @@ import { BigInteger } from "big-integer";
 
 import React from "react";
 import { View, Text, Alert, Platform, BackHandler, StyleSheet, NativeSyntheticEvent, TextInputEndEditingEventData, TextInput } from "react-native";
-import { TextInput as PaperTextInput, Button as PaperButton, IconButton } from "react-native-paper";
+import { TextInput as PaperTextInput, Button as PaperButton, IconButton, TouchableRipple } from "react-native-paper";
 
 import { BIG_0 } from "../mc";
 
@@ -135,7 +135,7 @@ export function normalizeProps(props : any) : any
 
 export function handleHardwareBackPress() : () => void
     {
-    return backHandler(true);
+    return backHandler(false);
     }
 
 export function handleHardwareBackPressNoExit() : () => void
@@ -169,8 +169,6 @@ function backHandler(showExitOption : boolean) : () => void
         return () : void => { ; };
     }
 
-
-
 export type InvalidMessageProps =
     {
     text: string;
@@ -199,7 +197,7 @@ export function TitleBar(props : TitleBarProps) : JSX.Element
     {
     return (
         <View style = { commonStyles.topBar }>
-            <IconButton style = { commonStyles.icon } size = { 24 } icon = "menu" onPress = { props.onBurgerPressed }/>
+            <IconButton style = { commonStyles.icon } rippleColor="#FFC0FF" size = { 24 } icon = "menu" onPress = { props.onBurgerPressed }/>
             <View style = { commonStyles.titleContainingView }>
                 <Text style = { commonStyles.titleText }>{ props.title }</Text>
             </View>
@@ -250,7 +248,7 @@ export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
                 <View style={{ width: 3 }}/>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <IconButton style={ commonStyles.icon } size={ 21 } icon={ props.icon } onPress={ props.onPress }/>
+                    <IconButton style={ commonStyles.icon } rippleColor="#FFC0FF" size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
                 </View>
                 <View style={ commonStyles.flex1 }/>
             </View>
@@ -411,6 +409,38 @@ export function SimpleButtonPair(props : SimpleButtonPairProps) : JSX.Element
             </View>
         </View>
         );
+    }
+
+
+
+export type MenuOptionProps =
+    {
+    icon      : string;
+    label     : string;
+    disabled? : boolean;
+    onPress   : () => void;
+    }
+
+export function MenuOption(props : MenuOptionProps) : JSX.Element
+    {
+    if (props.disabled)
+        return (
+            <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
+                <View style={{ width: 12 }}/>
+                <IconButton icon={ props.icon } disabled={ true } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
+                <Text style={{ color: "#808080", paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+            </View>
+            );
+    else
+        return (
+            <TouchableRipple onPress={ props.onPress } rippleColor="#D080D0">
+                <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
+                    <View style={{ width: 12 }}/>
+                    <IconButton icon={ props.icon } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
+                    <Text style={{ color: "#000000", paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+                </View>
+            </TouchableRipple>
+            );
     }
 
 
