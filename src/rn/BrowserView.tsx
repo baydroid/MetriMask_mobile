@@ -103,14 +103,6 @@ abstract class RNWebRefList extends WebRefList
         return new RNWebRef(so);
         }
 
-    private renderRefArray() : JSX.Element[]
-        {
-        const refArray : JSX.Element[] = new Array(this.refList.length);
-        let j = 0;
-        for (let i = this.refList.length - 1; i >= 0; i--) refArray[j++] = (this.refList[i] as RNWebRef).render(this, i);
-        return refArray;
-        }
-
     public render() : JSX.Element | null
         {
         if (this.refList.length > 0)
@@ -121,6 +113,14 @@ abstract class RNWebRefList extends WebRefList
                 );
         else
             return null;
+        }
+
+    private renderRefArray() : JSX.Element[]
+        {
+        const refArray : JSX.Element[] = new Array(this.refList.length);
+        let j = 0;
+        for (let i = this.refList.length - 1; i >= 0; i--) refArray[j++] = (this.refList[i] as RNWebRef).render(this, i);
+        return refArray;
         }
     }
 
@@ -175,6 +175,8 @@ class RNWebRef extends WebRef
         }
     }
 
+
+
 function renderListItem(title : string, description : string, onPress : () => any, onClose : () => any) : JSX.Element
     {
     return (
@@ -195,14 +197,6 @@ function renderListItem(title : string, description : string, onPress : () => an
         );
     }
 
-function initialSEItems() : ItemType<number>[]
-    {
-    const len = searchEngineCount();
-    const items : ItemType<number>[] = Array(len);
-    for (let i = 0; i < len; i++) items[i] = { label: searchEngineName(i), value: i };
-    return items;
-    }
-
 
 
 enum Screen
@@ -219,8 +213,6 @@ export type BrowserViewProps =
     onBurgerPressed? : () => any;
     };
 
-
-
 export default function BrowserView(props : BrowserViewProps) : JSX.Element
     {
     const [ whatShowing, setWhatShowing ] = useState<Screen>(Screen.browser);
@@ -231,6 +223,14 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
     const [ searchEngineDDOpen, setSearchEngineDDOpen ] = useState<boolean>(false);
     const [ searchEngineDDValue, setSearchEngineDDValue ] = useState<number>(searchEngineIndex());
     const [ searchEngineDDItems, setSearchEngineDDItems ] = useState<ItemType<number>[]>(initialSEItems());
+
+function initialSEItems() : ItemType<number>[]
+    {
+    const len = searchEngineCount();
+    const items : ItemType<number>[] = Array(len);
+    for (let i = 0; i < len; i++) items[i] = { label: searchEngineName(i), value: i };
+    return items;
+    }
 
     const mc : MC = MC.getMC();
     const storage : MRXStorage = mc.storage;

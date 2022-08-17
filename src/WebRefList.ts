@@ -1,3 +1,4 @@
+import { MC } from "./mc";
 import { BrowserTabContextBase } from "./rn/BrowserAllTabsView";
 
 
@@ -70,12 +71,19 @@ export abstract class WebRefList
         if (this.notifyRefSelected) this.notifyRefSelected(wref);
         }
 
-    public addRef(tabContext : BrowserTabContextBase) : boolean
+    public addRef(tabContext : BrowserTabContextBase) : void
         {
         const url = unblat(tabContext.currentUrl);
         let wref = this.refMap.get(url);
         if (wref)
-            return false;
+            {
+            let iWref : number = 0;
+            while (iWref < this.refList.length && this.refList[iWref].url != wref.url) iWref++;
+            if (iWref >= this.refList.length) MC.raiseError(`WebRefList internal inconsistency`, `WebRefList`);
+            for (let i = iWref + 1; i < this.refList.length; i++) this.refList[i - 1] = this.refList[i];
+            this.refList[this.refList.length - 1] = wref;
+            wref.updateEpochMillis();
+            }
         else
             {
             wref = this.makeNewWebRef().setFromTab(tabContext);
@@ -87,9 +95,8 @@ export abstract class WebRefList
                 for (let i = 1; i < this.refList.length; i++) this.refList[i - 1] = this.refList[i];
                 this.refList[this.refList.length - 1] = wref;
                 }
-            this.saveSelf();
-            return true;
             }
+        this.saveSelf();
         }
 
     public static makeWebRefArray(storageStr : string, makeNewWebRef : (so? : WebRefStorageObj) => WebRef) : WebRef[]
@@ -135,9 +142,14 @@ export class WebRef
     public setFromTab(tabContext : BrowserTabContextBase) : WebRef
         {
         this.so.url = tabContext.currentUrl;
-        this.so.title = tabContext.currentTitle + " (With some extra text added so as to make sure that the title is really long, like this 1 is.)";
+        this.so.title = tabContext.currentTitle;
         this.so.epochMillis = Date.now();
         return this;
+        }
+
+    public updateEpochMillis() : void
+        {
+        this.so.epochMillis = Date.now();
         }
 
     public getStorageObj() : WebRefStorageObj
