@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 
 import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, MRX_DECIMALS } from "../mc";
-import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage } from "./common";
+import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet } from "./common";
 import { ContractCallParams } from "../WalletManager"
 
 
@@ -129,7 +129,7 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Sending Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
-                <SimpleDoublet title="Sending Account Address:" text={ am.current.wm.address }/>
+                <AddressQuasiDoublet title="Sending Account Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Sending Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
                 <View style={{ height: 7 }} />

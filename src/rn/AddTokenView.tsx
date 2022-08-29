@@ -3,30 +3,41 @@ import { View } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-import { MC } from "../mc";
+import { ADDRESS_SYNTAX, MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { commonStyles, InvalidMessage, SimpleButton, SimpleTextInput, TitleBar } from "./common";
 import { MRC20Token } from "../MRC20";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
+import { WorkFunctionResult } from "./MainView";
+import { Account } from "../Account";
 
 
 
 const INVALID_ADDRESS_ERROR = "Address not valid.";
 const TOKEN_NOT_FOUND_ERROR = "Address is not a Token."
+const MNS_NAME_NOT_OK_ERROR = "The MNS name is not valid.";
 
-export type AddTokenViewProps =
+
+
+export type AddTokenViewSerializableProps =
     {
-    onBurgerPressed : () => any;
-    qrScanAddress   : (target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) => any;
+    address? : string;
+    errMsg?  : string;
     };
 
-let isCreating : boolean = false;
+export type AddTokenViewProps = AddTokenViewSerializableProps &
+    {
+    onBurgerPressed  : () => any;
+    qrScanAddress    : (target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) => any;
+    showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
+    };
+
 let qrScannedAddress : string = "";
 
 export function AddTokenView(props : AddTokenViewProps) : JSX.Element
     {
-    const [ address, setAddress ] = useState<string>("");
-    const [ errMsg, setErrMsg ] = useState<string>("");
+    const [ address, setAddress ] = useState<string>(props.address ? props.address : "");
+    const [ errMsg, setErrMsg ] = useState<string>(props.errMsg ? props.errMsg : "");
     const isShowing = useRef<boolean>(false);
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
 
@@ -43,24 +54,49 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
 
     function addToken() : void
         {
-        if (isCreating) return;
-        if (!MC.validateEthereumAddress(address))
+        const syntax : ADDRESS_SYNTAX = MC.anaylizeAddressSyntax(address);
+        switch (syntax)
             {
-            setError(INVALID_ADDRESS_ERROR);
-            return;
+            case ADDRESS_SYNTAX.EVM:                                  break;
+            case ADDRESS_SYNTAX.MNS:                                  break;
+            default:                 setError(INVALID_ADDRESS_ERROR); return;
             }
-        isCreating = true;
         clearError();
-        const plainAddr = address.startsWith("0x") ? address.substring(2) : address;
-        MC.getMC().storage.accountManager.current.createCandidateToken(plainAddr).then((tk : MRC20Token) : void =>
+        props.showWorkingAsync((onWorkDone : (result : WorkFunctionResult) => void) : void =>
             {
-            isCreating = false;
-            walletNavigation.navigate(WALLET_SCREENS.ACCEPT_TOKEN, { token: tk.toSerializableObject(true) });
-            })
-        .catch((e : any) : void =>
-            {
-            isCreating = false;
-            if (isShowing.current) setError(TOKEN_NOT_FOUND_ERROR);
+            const acnt : Account = MC.getMC().storage.accountManager.current;
+
+            function part2(evmAddress : string) : void
+                {
+                if (evmAddress.startsWith("0x")) evmAddress = evmAddress.substring(2);
+                acnt.createCandidateToken(evmAddress).then((tk : MRC20Token) : void =>
+                    {
+                    walletNavigation.navigate(WALLET_SCREENS.ACCEPT_TOKEN, { token: tk.toSerializableObject(true) });
+                    })
+                .catch((e : any) : void =>
+                    {
+                    finsihWithError(TOKEN_NOT_FOUND_ERROR);
+                    });
+                }
+
+            function finsihWithError(errMsg : string) : void
+                {
+                walletNavigation.navigate(WALLET_SCREENS.ADD_TOKEN, { address, errMsg });
+                }
+
+            if (syntax == ADDRESS_SYNTAX.MNS)
+                {
+                acnt.wm.ninfo.mnsResolveEvm(address).then((evmAddress : string) : void =>
+                    {
+                    if (evmAddress)
+                        part2(evmAddress);
+                    else
+                        finsihWithError(MNS_NAME_NOT_OK_ERROR);
+                    })
+                .catch((e : any) : void => MC.raiseError(e, "AddTokenView addToken"));
+                }
+            else
+                part2(address);
             });
         }
 

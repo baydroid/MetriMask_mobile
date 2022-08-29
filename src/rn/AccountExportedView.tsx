@@ -6,7 +6,7 @@ import Clipboard from "@react-native-clipboard/clipboard";
 
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { commonStyles, DoubleDoublet, SimpleButton, SimpleDoublet, TitleBar } from "./common";
+import { AddressQuasiDoublet, commonStyles, DoubleDoublet, SimpleButton, TitleBar } from "./common";
 
 
 
@@ -55,7 +55,7 @@ export function AccountExportedView(props : AccountExportedViewProps) : JSX.Elem
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
-                <SimpleDoublet title="Address:" text={ am.current.wm.address }/>
+                <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
                 <View style={{ height: 16 }}/>
                 <Text>WIF:</Text>
                 <View style={ accountExportedStyles.wif }>

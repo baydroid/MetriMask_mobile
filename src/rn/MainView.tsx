@@ -319,10 +319,15 @@ export default function MainView() : JSX.Element
             {
             if (asyncWorkFunction !== null)
                 {
-                asyncWorkFunction((result : WorkFunctionResult) : void =>
-                    {
-                    walletNavigate(result.nextScreen, result.nextScreenParams);
-                    });
+                setTimeout(
+                    () : void =>
+                        {
+                        asyncWorkFunction((result : WorkFunctionResult) : void =>
+                            {
+                            walletNavigate(result.nextScreen, result.nextScreenParams);
+                            });
+                        },
+                    100);
                 }
             });
         return renderLoadingScreen();

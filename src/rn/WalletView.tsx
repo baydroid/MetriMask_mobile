@@ -9,7 +9,7 @@ import { ImportAccountView } from "./ImportAccountView";
 import { LoginView } from "./LoginView";
 import { AccountHomeView } from "./AccountHomeView";
 import { AccountCreatedView } from "./AccountCreatedView";
-import { AddTokenView } from "./AddTokenView";
+import { AddTokenView, AddTokenViewSerializableProps } from "./AddTokenView";
 import { AcceptTokenView } from "./AcceptTokenView";
 import { SendView } from "./SendView";
 import { TransactionSentView } from "./TransactionSentView";
@@ -112,7 +112,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
-                    <CreateAccountView showWorking={ showWorking } onBurgerPressed={ onBurgerPressed }/>
+                    <CreateAccountView showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
                 </View>
             </SafeAreaView>
             );
@@ -125,7 +125,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
-                    <ImportAccountView { ...normalizeProps(props) } showWorking={ showWorking } onBurgerPressed={ onBurgerPressed }/>
+                    <ImportAccountView { ...normalizeProps(props) } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
                 </View>
             </SafeAreaView>
             );
@@ -138,7 +138,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
-                    <LoginView { ...normalizeProps(props) } showWorking={ showWorking } onBurgerPressed={ onBurgerPressed }/>
+                    <LoginView { ...normalizeProps(props) } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
                 </View>
             </SafeAreaView>
             );
@@ -151,7 +151,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
-                    <AccountHomeView showWorking={ showWorking } onBurgerPressed={ onBurgerPressed }/>
+                    <AccountHomeView showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
                 </View>
             </SafeAreaView>
             );
@@ -170,14 +170,14 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
             );
         }
 
-    function AddTokenScreen(props : any) : JSX.Element
+    function AddTokenScreen(props : AddTokenViewSerializableProps) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPress);
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
-                    <AddTokenView { ...normalizeProps(props) }qrScanAddress={ qrScanAddress } onBurgerPressed={ onBurgerPressed }/>
+                    <AddTokenView { ...normalizeProps(props) } qrScanAddress={ qrScanAddress } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
                 </View>
             </SafeAreaView>
             );

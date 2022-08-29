@@ -7,6 +7,7 @@ import { View, Text, Alert, Platform, BackHandler, StyleSheet, NativeSyntheticEv
 import { TextInput as PaperTextInput, Button as PaperButton, IconButton, TouchableRipple } from "react-native-paper";
 
 import { BIG_0 } from "../mc";
+import { Account } from "../Account.js";
 
 
 
@@ -265,6 +266,60 @@ export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
 
 
 
+export type AddressQuasiDoubletProps =
+    {
+    title    : string;
+    acnt     : Account;
+    icon?    : string;
+    onPress? : () => any;
+    }
+
+export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Element
+    {
+    const address : string = props.acnt.wm.address;
+    const mnsName : string = props.acnt.wm.mnsNmae;
+
+    function renderMnsName() : JSX.Element | null
+        {
+        if (mnsName.length)
+            return (<Text style = {{ color: "#000000" }}>{ mnsName }</Text>);
+        else
+            return null;
+        }
+
+    if (props.icon)
+        {
+        return (
+            <View style={ commonStyles.rowContainerV2 }>
+                <View style={ commonStyles.columnContainerV2 }>
+                    <View style={ commonStyles.flex1 }/>
+                    <Text>{ props.title }</Text>
+                    { renderMnsName() }
+                    <Text style = {{ color: "#000000" }}>{ address }</Text>
+                </View>
+                <View style={{ width: 3 }}/>
+                <View style={ commonStyles.columnContainerV2 }>
+                    <View style={ commonStyles.flex1 }/>
+                    <IconButton style={ commonStyles.icon } rippleColor="#FFC0FF" size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
+                </View>
+                <View style={ commonStyles.flex1 }/>
+            </View>
+            );
+        }
+    else
+        {
+        return (
+            <>
+                <Text>{ props.title }</Text>
+                { renderMnsName() }
+                <Text style = {{ color: "#000000" }}>{ address }</Text>
+            </>
+            );
+        }
+    }
+
+
+
 export type DoubleDoubletProps =
     {
     titleL : string;
@@ -502,6 +557,28 @@ export function formatStringSatoshi(satStr : string, decimals : number) : string
     while (satStr.charCodeAt(len) == CC_0) len--;
     if (satStr.charCodeAt(len) == CC_DOT) len++;
     return negative ? `-` + satStr.substring(0, len + 1) : satStr.substring(0, len + 1);
+    }
+
+export function noumberOfDecimals(floatStr : string) : number
+    {
+    let i : number = 0;
+    while (i < floatStr.length)
+        {
+        const cc = floatStr.charCodeAt(i);
+        if (!(CC_0 <= cc && cc <= CC_9)) break;
+        i++;
+        }
+    if (i >= floatStr.length) return 0;
+    if (floatStr.charCodeAt(i) != CC_DOT) return -1;
+    i++;
+    let start : number = i;
+    while (i < floatStr.length)
+        {
+        const cc = floatStr.charCodeAt(i);
+        if (!(CC_0 <= cc && cc <= CC_9)) break;
+        i++;
+        }
+    return i >= floatStr.length ? i - start : -1;
     }
 
 export function validateAndSatoshizeFloatStr(floatStr : string, decimals : number) : string

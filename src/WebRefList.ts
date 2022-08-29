@@ -39,6 +39,11 @@ export abstract class WebRefList
         this.notifyRefDeleted = onRefDeleted;
         }
 
+    public get list() : WebRef[]
+        {
+        return this.refList;
+        }
+
     public get length() : number
         {
         return this.refList.length;
@@ -80,20 +85,27 @@ export abstract class WebRefList
             let iWref : number = 0;
             while (iWref < this.refList.length && this.refList[iWref].url != wref.url) iWref++;
             if (iWref >= this.refList.length) MC.raiseError(`WebRefList internal inconsistency`, `WebRefList`);
-            for (let i = iWref + 1; i < this.refList.length; i++) this.refList[i - 1] = this.refList[i];
-            this.refList[this.refList.length - 1] = wref;
+            for (let i : number = iWref - 1; i >= 0; i--) this.refList[i + 1] = this.refList[i];
+            this.refList[0] = wref;
             wref.updateEpochMillis();
             }
         else
             {
             wref = this.makeNewWebRef().setFromTab(tabContext);
             this.refMap.set(url, wref);
-            if (this.refList.length < MAX_WEB_REF_LIST_LENGTH)
+            if (this.refList.length == 0)
                 this.refList.push(wref);
+            else if (this.refList.length < MAX_WEB_REF_LIST_LENGTH)
+                {
+                const lastWref : WebRef = this.refList[this.refList.length - 1];
+                for (let i : number = this.refList.length - 2; i >= 0; i--) this.refList[i + 1] = this.refList[i];
+                this.refList.push(lastWref);
+                this.refList[0] = wref;
+                }
             else
                 {
-                for (let i = 1; i < this.refList.length; i++) this.refList[i - 1] = this.refList[i];
-                this.refList[this.refList.length - 1] = wref;
+                for (let i : number = this.refList.length - 2; i >= 0; i--) this.refList[i + 1] = this.refList[i];
+                this.refList[0] = wref;
                 }
             }
         this.saveSelf();

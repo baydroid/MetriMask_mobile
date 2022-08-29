@@ -67,9 +67,9 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
             {
             case QR_SCANNER_TARGETS.ethereumAddress:
                 if (addr.startsWith("0x")) addr = addr.substring(2);
-                return MC.validateEthereumAddress(addr) ? addr : "";
+                return MC.validateEvmAddress(addr) ? addr : "";
             case QR_SCANNER_TARGETS.metrixAddress:
-                return MC.validateMetrixAddress(addr) ? addr : "";
+                return MC.validateMrxAddress(addr) ? addr : "";
             default:
                 return "";
             }

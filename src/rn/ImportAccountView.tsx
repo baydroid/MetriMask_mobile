@@ -7,6 +7,7 @@ import { WorkFunctionResult } from "./MainView";
 import { commonStyles, InvalidMessage, TitleBar, SimpleButton, SimpleTextInput, DoubleDoublet } from "./common";
 import { AccountManager } from "../AccountManager";
 import { nim } from "../NetInfo";
+import { Insight } from "metrixjs-wallet";
 
 
 
@@ -23,32 +24,26 @@ export type ImportAccountViewProps =
     netId             : number;
     password?         : string;
     byWWIFNotMnemonic : boolean;
-    showWorking       : (workFunction : () => WorkFunctionResult) => void;
+    param?            : string;
+    errMsg?           : string;
+    showWorkingAsync  : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
     onBurgerPressed   : () => any;
     };
 
-let pendingErrorMsg : string = "";
-
 export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
     {
-    const [ param, setParam ] = useState<string>("");
-    const [ errorMsg, setErrorMsg ] = useState<string>("");
+    const [ param, setParam ] = useState<string>(props.param ? props.param : "");
+    const [ errorMsg, setErrorMsg ] = useState<string>(props.errMsg ? props.errMsg : "");
 
     const am : AccountManager = MC.getMC().storage.accountManager;
     const netName : string = nim().fromId(props.netId).name;
-
-    if (pendingErrorMsg != "")
-        {
-        setErrorMsg(pendingErrorMsg);
-        pendingErrorMsg = "";
-        }
 
     function importAccount() : void
         {
         clearError();
         if (validateInput())
             {
-            props.showWorking(() : WorkFunctionResult =>
+            props.showWorkingAsync((onWorkDone : (result : WorkFunctionResult) => void) : void =>
                 {
                 if (props.password) am.providePassword(props.password);
                 let ok : boolean;
@@ -57,11 +52,21 @@ export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
                 else
                     ok = am.importByMnemonic(props.name, props.netId, param);
                 if (ok)
-                    return { nextScreen: WALLET_SCREENS.ACCOUNT_HOME };
+                    {
+                    am.current.finishLoad().then((info : Insight.IGetInfo | null) : void =>
+                        {
+                        onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_HOME });
+                        })
+                    .catch((e : any) : void =>
+                        {
+                        MC.raiseError(e, `ImportAccountView importAccount()`);
+                        });
+                    }
                 else
                     {
-                    pendingErrorMsg = props.byWWIFNotMnemonic ? INVALID_WIF_ERROR : INVALID_MNEMONIC_ERROR;
-                    return { nextScreen: WALLET_SCREENS.IMPORT_ACCOUNT, nextScreenParams: { name: props.name, netId: props.netId, byWWIFNotMnemonic: props.byWWIFNotMnemonic } };
+                    const errMsg = props.byWWIFNotMnemonic ? INVALID_WIF_ERROR : INVALID_MNEMONIC_ERROR;
+                    const result : WorkFunctionResult = { nextScreen: WALLET_SCREENS.IMPORT_ACCOUNT, nextScreenParams: { param: param, errMsg: errMsg, name: props.name, netId: props.netId, byWWIFNotMnemonic: props.byWWIFNotMnemonic } };
+                    setTimeout(() : void => onWorkDone(result), 0);
                     }
                 });
             }

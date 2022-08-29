@@ -120,6 +120,7 @@ export class WalletManager
     private walletRpcProvider : WalletRPCProvider | null = null;
     private walletMweb3 : Mweb3Main | null = null;
     private walletAddress : string = "";
+    private nnsNameByReversal : string = "";
     private lastBalanceSat : BigInteger = toBigInteger(-10);
     private lastBalanceSatDelta : BigInteger = BIG_0;
     private lastUnconfirmedBalanceSat : BigInteger = toBigInteger(-10);
@@ -140,6 +141,7 @@ export class WalletManager
     public get wallet()                     : MRXWallet         { return this.ownWallet!;                     }
     public get rpcProvider()                : WalletRPCProvider { return this.walletRpcProvider!              }
     public get address()                    : string            { return this.walletAddress;                  }
+    public get mnsNmae()                    : string            { return this.nnsNameByReversal;              }
     public get balanceSat()                 : BigInteger        { return this.lastBalanceSat;                 }
     public get balanceSatDelta()            : BigInteger        { return this.lastBalanceSatDelta;            }
     public get unconfirmedBalanceSat()      : BigInteger        { return this.lastUnconfirmedBalanceSat;      }
@@ -214,6 +216,46 @@ export class WalletManager
         this.lastTxCountDelta = 0;
         this.lastUnconfirmedTxCountDelta = 0;
         this.lastUpdated = 0;
+        }
+
+    public loadInfoAndMns() : Promise<Insight.IGetInfo | null>
+        {
+        return new Promise<Insight.IGetInfo | null>((resolve : (info : Insight.IGetInfo | null) => any, reject : (e : any) => any) : void =>
+            {
+            let outCount : number = 2;
+            let rejected : boolean = false;
+            let infoReported : Insight.IGetInfo | null = null;
+
+            function complete(e : any) : void
+                {
+                if (!rejected)
+                    {
+                    if (e !== null)
+                        {
+                        rejected = true;
+                        reject(e);
+                        }
+                    else if (--outCount == 0)
+                        resolve(infoReported);
+                    }
+                }
+
+            this.getInfo().then((info : Insight.IGetInfo | null) : void => { infoReported = info; complete(null); }).catch(complete);
+            this.reverseResolveMnsName().then((label : string) : void => complete(null)).catch(complete);
+            });
+        }
+
+    private reverseResolveMnsName() : Promise<string>
+        {
+        return new Promise<string>((resolve : (label : string) => any, reject : (e : any) => any) : void =>
+            {
+            this.ninfo.mnsReverseResolve(this.walletAddress).then((label : string) : void =>
+                {
+                this.nnsNameByReversal = label;
+                resolve(label);
+                })
+            .catch(reject);
+            });
         }
 
     public unloadWallet() : void

@@ -4,7 +4,7 @@ import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Te
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { commonStyles, DoubleDoublet, formatSatoshi, InvalidMessage, SimpleButton, SimpleDoublet, SimpleTextInput, TitleBar } from "./common";
+import { AddressQuasiDoublet, commonStyles, DoubleDoublet, formatSatoshi, InvalidMessage, SimpleButton, SimpleDoublet, SimpleTextInput, TitleBar } from "./common";
 
 
 
@@ -141,7 +141,7 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
-                <SimpleDoublet title="Address:" text={ am.current.wm.address }/>
+                <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
                 <View style={{ height: 24 }} />

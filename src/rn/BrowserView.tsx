@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Text, View, StyleSheet, Platform, ScrollView, TouchableWithoutFeedback } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, View, StyleSheet, Platform, TouchableWithoutFeedback, ListRenderItemInfo, FlatList } from "react-native";
 import { IconButton, TouchableRipple } from 'react-native-paper';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
@@ -98,29 +98,14 @@ abstract class RNWebRefList extends WebRefList
     {
     public abstract get title() : string;
 
+    public get list() : RNWebRef[]
+        {
+        return this.refList as RNWebRef[];
+        }
+
     protected makeNewWebRef(so? : WebRefStorageObj) : WebRef
         {
         return new RNWebRef(so);
-        }
-
-    public render() : JSX.Element | null
-        {
-        if (this.refList.length > 0)
-            return (
-                <ScrollView>
-                    { this.renderRefArray() }
-                </ScrollView>
-                );
-        else
-            return null;
-        }
-
-    private renderRefArray() : JSX.Element[]
-        {
-        const refArray : JSX.Element[] = new Array(this.refList.length);
-        let j = 0;
-        for (let i = this.refList.length - 1; i >= 0; i--) refArray[j++] = (this.refList[i] as RNWebRef).render(this, i);
-        return refArray;
         }
     }
 
@@ -162,13 +147,13 @@ export class WebHistoryList extends RNWebRefList
 
 class RNWebRef extends WebRef
     {
-    public render(wlist : WebRefList, index : number) : JSX.Element
+    public render(wrList : WebRefList, index : number) : JSX.Element
         {
         const when = new Date(this.so.epochMillis);
         const description = when.toLocaleDateString() + " " + when.toLocaleTimeString(undefined, { hour12: false }) + " " + this.so.url;
         return (
             <View key={ index + 1 } style={ browserViewStyles.lolite }>
-                { renderListItem(this.so.title, description, () : void => wlist.selectPressed(this, index), () => wlist.deletePressed(this, index)) }
+                { renderListItem(this.so.title, description, () : void => wrList.selectPressed(this, index), () => wrList.deletePressed(this, index)) }
                 <View style={ commonStyles.horizontalBar }/>
             </View>
             );
@@ -223,14 +208,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
     const [ searchEngineDDOpen, setSearchEngineDDOpen ] = useState<boolean>(false);
     const [ searchEngineDDValue, setSearchEngineDDValue ] = useState<number>(searchEngineIndex());
     const [ searchEngineDDItems, setSearchEngineDDItems ] = useState<ItemType<number>[]>(initialSEItems());
-
-function initialSEItems() : ItemType<number>[]
-    {
-    const len = searchEngineCount();
-    const items : ItemType<number>[] = Array(len);
-    for (let i = 0; i < len; i++) items[i] = { label: searchEngineName(i), value: i };
-    return items;
-    }
+    const [ tabNonce, setTabNonce ] = useState<number>(1);
 
     const mc : MC = MC.getMC();
     const storage : MRXStorage = mc.storage;
@@ -238,6 +216,14 @@ function initialSEItems() : ItemType<number>[]
     const history : WebHistoryList = storage.browserHistory;
 
     let allTabsAPI : BrowserAllTabsViewAPI | null = null;
+
+    function initialSEItems() : ItemType<number>[]
+        {
+        const len = searchEngineCount();
+        const items : ItemType<number>[] = Array(len);
+        for (let i = 0; i < len; i++) items[i] = { label: searchEngineName(i), value: i };
+        return items;
+        }
 
     function getApi(api : BrowserAllTabsViewAPI) : void
         {
@@ -280,6 +266,7 @@ function initialSEItems() : ItemType<number>[]
             {
             allTabsAPI.setHiding(false);
             allTabsAPI.activateTab(new BrowserTabContext(MC.getUniqueInt(), ""));
+            setTabNonce(tabNonce + 1);
             }
         }
 
@@ -289,6 +276,7 @@ function initialSEItems() : ItemType<number>[]
             {
             allTabsAPI.setHiding(false);
             allTabsAPI.closeTabById(activeTabId());
+            setTabNonce(tabNonce + 1);
             }
         }
 
@@ -336,12 +324,6 @@ function initialSEItems() : ItemType<number>[]
             allTabsAPI.setHiding(false);
             allTabsAPI.activateTab(tabContext);
             }
-        }
-
-    function onCloseTabListItemPressed(tabContext : BrowserTabContextBase) : void
-        {
-        if (tabCount <= 1) resumeShowingBrowser();
-        if (allTabsAPI) allTabsAPI.closeTab(tabContext);
         }
 
     function openInOtherBrowser() : void
@@ -423,26 +405,34 @@ function initialSEItems() : ItemType<number>[]
 
     function ListTabs() : JSX.Element
         {
-        function renderTabListItems() : JSX.Element[]
+        function onCloseTabListItemPressed(tabContext : BrowserTabContextBase) : void
             {
-            return allTabsAPI!.mapTabs((tabContext : BrowserTabContextBase) : JSX.Element =>
-                {
-                return (
-                    <View key={ tabContext.tabKey } style={ tabContext.tabId == activeTabId() ? browserViewStyles.hilite : browserViewStyles.lolite }>
-                        { renderListItem(tabContext.currentTitle, tabContext.currentUrl, () : void => onTabListItemPressed(tabContext), () => onCloseTabListItemPressed(tabContext)) }
-                        <View style={ commonStyles.horizontalBar }/>
-                    </View>
-                    );
-                });
+            setTabNonce(tabNonce + 1);
+            if (allTabsAPI) allTabsAPI.closeTab(tabContext);
+            if (tabCount <= 1) resumeShowingBrowser();
+            }
+    
+        function renderItem(param : ListRenderItemInfo<BrowserTabContextBase>) : JSX.Element
+            {
+            const tabContext : BrowserTabContextBase = param.item;
+            return (
+                <View style={ tabContext.tabId == activeTabId() ? browserViewStyles.hilite : browserViewStyles.lolite }>
+                    { renderListItem(tabContext.currentTitle, tabContext.currentUrl, () : void => onTabListItemPressed(tabContext), () => onCloseTabListItemPressed(tabContext)) }
+                    <View style={ commonStyles.horizontalBar }/>
+                </View>
+                );
+            }
+
+        function getKey(tabContext : BrowserTabContextBase) : string
+            {
+            return tabContext.tabKey;
             }
 
         if (tabCount > 0)
             return (
                 <>
                     { renderListHeader("Open Tabs") }
-                    <ScrollView>
-                        { renderTabListItems() }
-                    </ScrollView>
+                    <FlatList<BrowserTabContextBase> data={ allTabsAPI!.tabList() } renderItem={ renderItem } keyExtractor={ getKey } extraData={ tabNonce }/>
                 </>
                 );
         else
@@ -452,6 +442,7 @@ function initialSEItems() : ItemType<number>[]
     function ListWebRefs(props : { list : RNWebRefList }) : JSX.Element
         {
         const [ nonce, setNonce ] = useState<number>(1);
+        const list : RNWebRefList = props.list;
 
         function bumpNonce(wref : WebRef) : void
             {
@@ -464,14 +455,23 @@ function initialSEItems() : ItemType<number>[]
             resumeShowingBrowser();
             }
 
-        const list : RNWebRefList = props.list;
+        function renderItem(param : ListRenderItemInfo<RNWebRef>) : JSX.Element
+            {
+            return param.item.render(list, param.index);
+            }
+
+        function getKey(wref : RNWebRef) : string
+            {
+            return wref.url;
+            }
+
         list.setOnRefSelected(openWebRef);
         list.setOnRefDeleted(bumpNonce);
         if (list.length > 0)
             return (
                 <>
                     { renderListHeader(list.title) }
-                    { list.render() }
+                    <FlatList<RNWebRef> data={ props.list.list } renderItem={ renderItem } keyExtractor={ getKey } extraData={ nonce }/>
                 </>
                 );
         else
@@ -480,6 +480,14 @@ function initialSEItems() : ItemType<number>[]
 
     function Settings() : JSX.Element
         {
+        useEffect(() : (() => void) =>
+            {
+            return () : void =>
+                {
+                if (searchEngineDDOpen) setSearchEngineDDOpen(false);
+                }
+            });
+    
         return (
             <View style={ commonStyles.containingView }>
                 { renderListHeader("Browser Settings") }

@@ -10,6 +10,7 @@ import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { NET_ID } from "../NetInfo";
 import { commonStyles, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage } from "./common";
+import { Insight } from "metrixjs-wallet";
 
 
 
@@ -22,8 +23,8 @@ const CONFIRM_PASSWORD_ERROR   = "The password and the conform passwaord are dif
 
 type CreateAccountViewProps =
     {
-    showWorking     : (workFunction : () => WorkFunctionResult) => void;
-    onBurgerPressed : () => any;
+    showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
+    onBurgerPressed  : () => any;
     };
 
 export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
@@ -42,17 +43,26 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
     const plainPasswordRef = useRef<TextInput>(null);
 
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
-    const am = MC.getMC().storage.accountManager;
+    const mc = MC.getMC();
+    const am = mc.storage.accountManager;
 
     function createNew() : void
         {
         if (validateInput())
             {
-            props.showWorking(() : WorkFunctionResult =>
+            props.showWorkingAsync((onWorkDone : (result : WorkFunctionResult) => void) : void =>
                 {
                 if (!am.isLoggedIn) am.providePassword(password);
-                const mnemonic = am.createNewAccount(name, networkDDValue as number);
-                return { nextScreen: WALLET_SCREENS.ACCOUNT_CREATED, nextScreenParams: { mnemonic } };
+                const mnemonic : string = am.createNewAccount(name, networkDDValue as number);
+                if (!mnemonic.length) MC.raiseError(`Attempt to create an account with an already existing name.`, `CreateAccountView createNew() 1`);
+                am.current.finishLoad().then((info : Insight.IGetInfo | null) : void =>
+                    {
+                    onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_CREATED, nextScreenParams: { mnemonic } });
+                    })
+                .catch((e : any) : void =>
+                    {
+                    MC.raiseError(e, `CreateAccountView createNew() 2`);
+                    });
                 });
             }
         }

@@ -2,19 +2,20 @@ import "../../shim.js";
 
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, useWindowDimensions, FlatList, ListRenderItemInfo } from "react-native";
-import { IconButton, TouchableRipple, Button as PaperButton } from "react-native-paper";
+import { IconButton, TouchableRipple, ProgressBar } from "react-native-paper";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from "@react-navigation/stack";
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { TabView, TabBar, SceneMap, SceneRendererProps, NavigationState } from 'react-native-tab-view';
 import { Scene } from "react-native-tab-view/lib/typescript/types";
 
-import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair } from "./common";
+import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet } from "./common";
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { TransactionInfo } from "../TransactionLog";
 import { MRC20Token } from "../MRC20";
+import { Insight } from "metrixjs-wallet";
 
 
 
@@ -41,8 +42,8 @@ const accountHomeStyles = StyleSheet.create
 
 export type AccountHomeViewProps =
     {
-    onBurgerPressed : () => any;
-    showWorking     : (workFunction : () => WorkFunctionResult) => void;
+    onBurgerPressed  : () => any;
+    showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
     };
 
 
@@ -76,7 +77,6 @@ const tabRoutes : TabRoute[] =
 let onDisplay : boolean = false;
 let tokenRefreshPending : boolean = false;
 let tokenRefreshInProgress : boolean = false;
-let txLoadInProgress : boolean = false;
 let nonce : number = 1;
 
 export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
@@ -99,6 +99,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
     const [ disableMoreTxs, setDisableMoreTxs ] = useState<boolean>(false);
     const [ txLogTickler, setTxLogTickler ] = useState<boolean>(false);
     const [ tokenTickler, setTokenTickler ] = useState<boolean>(false);
+    const [ txLoadInProgress, setTxLoadInProgress ] = useState<boolean>(false);
 
     const layout = useWindowDimensions();
     if (disableMoreTxs != txLoadInProgress) setDisableMoreTxs(txLoadInProgress);
@@ -184,11 +185,18 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             nonce++;
             if (am.setCurrentAccountNeedsWork(item.value as string))
                 {
-                props.showWorking(() : WorkFunctionResult =>
+                props.showWorkingAsync((onWorkDone : (result : WorkFunctionResult) => void) : void =>
                     {
                     am.setCurrentAccount(item.value as string);
-                    if (tabIndex == TAB_INDEX.TOKENS) tokenRefreshPending = true;
-                    return { nextScreen: WALLET_SCREENS.ACCOUNT_HOME };
+                    am.current.finishLoad().then((info : Insight.IGetInfo | null) : void =>
+                        {
+                        if (tabIndex == TAB_INDEX.TOKENS) tokenRefreshPending = true;
+                        onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_HOME });
+                        })
+                    .catch((e : any) : void =>
+                        {
+                        MC.raiseError(e, `AccountHomeView onSelectAccount()`);
+                        });
                     });
                 }
             else
@@ -215,16 +223,16 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
         {
         if (!tokenRefreshInProgress && !txLoadInProgress)
             {
-            txLoadInProgress = true;
+            setTxLoadInProgress(true);
             const myNonce = nonce;
             am.current.extendTxLog().then((canLoadMoreTxs : boolean) : void =>
                 {
-                txLoadInProgress = false;
+                setTxLoadInProgress(false);
                 if (myNonce == nonce && onDisplay && tabIndex == TAB_INDEX.TRANSACTIONS) updateTxs();
                 })
             .catch((e : any) : void =>
                 {
-                txLoadInProgress = false;
+                setTxLoadInProgress(false);
                 MC.raiseError(e, "AccountHomeView.onLoadMoreTxs()");
                 });
             }
@@ -348,6 +356,14 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             );
         }
 
+    function DividerBar() : JSX.Element
+        {
+        if (disableMoreTxs)
+            return (<ProgressBar style = {{ height: 3 }} indeterminate color = "#600060" />);
+        else
+            return (<ProgressBar style = {{ height: 3 }} progress = { 1 } color = "#600060" />);
+        }
+
     return (
          <View style={ commonStyles.containingView }>
             <TitleBar title="Account Home" onBurgerPressed={ onBurgerPressed }/>
@@ -370,14 +386,14 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Network:" textL={ am.current.wm.ninfo.name } titleR="Unconfirmed MRX:" textR={ unconfirmedBalance }/>
                 <View style={{ height: 7 }} />
-                <SimpleDoublet title="Address:" text={ am.current.wm.address } />
+                <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="MRX Balance:" text={ balance } />
                 <View style={{ height: 24 }} />
                 <SimpleButtonPair left={{ text: "Send", icon: "debug-step-out", onPress: onSend }} right={{ text: "Receive", icon: "debug-step-into", onPress: onReceive }}/>
                 <View style={{ height: 24 }} />
             </View>
-            <View style={ commonStyles.horizontalBar }/>
+            <DividerBar/>
             <TabView navigationState={{ index: tabIndex, routes: tabRoutes }} renderScene={ tabSceneMap } onIndexChange={ setTabIndex } initialLayout={{ width: layout.width }} renderTabBar={ renderTabBar }/>
         </View>
         );

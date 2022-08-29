@@ -15,6 +15,7 @@ import { BrowserTabContext } from "./BrowserTabContext";
 import { MRXStorage, SALT_BYTE_LEN } from "./MRXStorage";
 import { MainViewAPI, DEFAULT_INACTIVITY_TIMEOUT_MILLIS, WorkFunctionResult } from './rn/MainView';
 import { ContractCallParams } from './WalletManager';
+import { isMnsName } from './nameUtils';
 
 
 
@@ -36,6 +37,18 @@ const CH_a                   = "a".charCodeAt(0);
 const CH_f                   = "f".charCodeAt(0);
 const CH_A                   = "A".charCodeAt(0);
 const CH_F                   = "F".charCodeAt(0);
+
+
+
+export enum ADDRESS_SYNTAX
+    {
+    MRX     = 0,
+    EVM     = 1,
+    MNS     = 2,
+    INVALID = 3
+    };
+
+
 
 export class MC // MC: Master of Ceremonies -- the place where the different parts of the app can find each other.
     {
@@ -202,14 +215,27 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
         BackHandler.exitApp();
         }
 
-    public static validateMetrixAddress(addr : string) : boolean
+    public static anaylizeAddressSyntax(address : string) : ADDRESS_SYNTAX
+        {
+        if (MC.validateEvmAddress(address)) return ADDRESS_SYNTAX.EVM;
+        if (MC.validateMrxAddress(address)) return ADDRESS_SYNTAX.MRX;
+        if (MC.validateMnsName(address)) return ADDRESS_SYNTAX.MNS;
+        return ADDRESS_SYNTAX.INVALID;
+        }
+
+    public static validateMrxAddress(addr : string) : boolean
         {
         return validate(addr);
         }
 
-    public static validateEthereumAddress(addr : string) : boolean
+    public static validateMnsName(mnsName : string) : boolean
         {
-        function ethereumChecksumTestsOK(addr : string) : boolean
+        return isMnsName(mnsName);
+        }
+
+    public static validateEvmAddress(addr : string) : boolean
+        {
+        function checksumIsOK(addr : string) : boolean
             {
             const hash : string = createKeccakHash("keccak256").update(addr.toLowerCase()).digest("hex");
             for (let i = 0; i < addr.length; i++)
@@ -226,7 +252,7 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
                 }
             return true;
             }
-    
+
         if (addr.startsWith("0x")) addr = addr.substring(2);
         if (addr.length != 40) return false;
         let upperCaseSeen : boolean = false;
@@ -241,7 +267,7 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
             else if (!(CH_0 <= cc && cc <= CH_9))
                 return false;
             }
-        return upperCaseSeen && lowerCaseSeen ? ethereumChecksumTestsOK(addr) : true;
+        return upperCaseSeen && lowerCaseSeen ? checksumIsOK(addr) : true;
         }
 
     public static getUniqueInt() : number

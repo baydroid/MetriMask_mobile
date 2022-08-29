@@ -130,7 +130,7 @@ export class AccountManager
     // Returns false if it can't create the account because the name's already in use or the WIF's bad, otherwise returns true.
     public importByWIF(name : string, netId : number, wif : string) : boolean 
         {
-        if (!this.passwordHash.length) MC.raiseError(`Attempt to import  by WIF without first providing a password.`, "AccountManager importByWIF()");
+        if (!this.passwordHash.length) MC.raiseError(`Attempt to import by WIF without first providing a password.`, "AccountManager importByWIF()");
         if (this.accountsByName.has(name))
             return false;
         else

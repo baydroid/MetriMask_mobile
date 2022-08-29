@@ -35,7 +35,9 @@ STEP 4)
 
 Install the required npm modules.
 
+    npm install assert
     npm install big-integer
+    npm install idna-uts46
     npm install base58-js
     npm install sha256-uint8array
     npm install bip39
@@ -44,6 +46,12 @@ Install the required npm modules.
     npm install metrixjs-wallet
     npm install bitcoinjs-message
     npm install bitcoinjs-lib@4.0.5
+    npm install @metrixnames/mnslib
+    npm install @metrixcoin/metrilib
+    npm install bs58
+    npm install base-64
+    npm install --save-dev @types/base-64
+    npm install assert
     npm install --save-dev @types/bitcoinjs-lib
     npm install scryptsy
     npm install --save-dev @types/scryptsy
@@ -78,7 +86,7 @@ Install the required npm modules.
     npm install react-native-dropdown-picker
     npm install react-native-pager-view
     npm install react-native-tab-view
-    npm install react-native-qrcode-svg
+    npm install react-native-qrcode-svg --legacy-peer-deps
     npm install --save-dev tradle/rn-nodeify
 
 STEP 5)
@@ -101,7 +109,7 @@ Edit android/build.gradle. Add the line
 
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0')
 
-to the esisting buildscript.dependencies section already in the file. I.E. placed like so.
+to the esisting buildscript.dependencies section already in the file (just above where the comments say not to add dependancies). I.E. placed like so.
 
     buildscript {
         dependencies {
@@ -218,7 +226,7 @@ to
 
 STEP 14)
 
-Edit android/app/src/main/res/values/strings.xml. Set the android app name by setting the value of the "app_nmae" string. Leave any other strings intact.
+Edit android/app/src/main/res/values/strings.xml. Set the android app name by setting the value of the "app_name" string. Leave any other strings intact.
 
 For example change
 

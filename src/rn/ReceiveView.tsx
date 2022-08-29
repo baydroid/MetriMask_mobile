@@ -9,7 +9,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { commonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton } from "./common";
+import { commonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton, AddressQuasiDoublet } from "./common";
 
 
 
@@ -41,7 +41,7 @@ export function ReceiveView(props : ReceiveViewProps) : JSX.Element
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
                 <View style={{ height: 7 }} />
-                <SimpleDoublet title="Account Address:" text={ am.current.wm.address }/>
+                <AddressQuasiDoublet title="Account Address:" acnt={ am.current }/>
                 <View style = {{ height: 24 }} />
                 <SimpleButton onPress={ () : void => Clipboard.setString(am.current.wm.address) } text="Copy to Clipboard" icon="content-copy"/>
                 <View style={{ height: 48 }} />

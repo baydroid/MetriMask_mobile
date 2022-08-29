@@ -155,6 +155,7 @@ export type BrowserAllTabsViewAPI =
     closeTabById       : (tabId : number) => void;
     closeAllTabs       : () => void;
     tabCount           : () => number;
+    tabList            : () => BrowserTabContextBase[];
     tabAtIndex         : (index : number) => BrowserTabContextBase | null;
     forEachTab         : (func : (tabContext : BrowserTabContextBase) => any) => void;
     mapTabs            : <MappedTabType>(mapper : (tabContext : BrowserTabContextBase) => MappedTabType) => MappedTabType[];
@@ -194,6 +195,7 @@ export default function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JS
         closeTabById: closeTabById,
         closeAllTabs: closeAllTabs,
         tabCount: tabCount,
+        tabList: () => tabArray,
         tabAtIndex: tabAtIndex,
         forEachTab : forEachTab,
         mapTabs: mapTabs,

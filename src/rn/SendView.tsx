@@ -1,17 +1,17 @@
 import "../../shim.js";
 
 import React, { useState, useEffect } from "react";
-import { NativeSyntheticEvent, Text, TextInputEndEditingEventData, View } from "react-native";
+import { Alert, NativeSyntheticEvent, Text, TextInputEndEditingEventData, View } from "react-native";
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { useNavigation } from "@react-navigation/native";
 import toBigInteger, { BigInteger } from "big-integer";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Insight } from "metrixjs-wallet";
 
-import { MC, MRX_DECIMALS, BIG_0 } from "../mc";
+import { MC, MRX_DECIMALS, BIG_0, ADDRESS_SYNTAX } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { commonStyles, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr } from "./common";
+import { commonStyles, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr, AddressQuasiDoublet, noumberOfDecimals } from "./common";
 import { TransactionSentViewSerializableProps } from "./TransactionSentView";
 import { MRC20Token } from "../MRC20.js";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
@@ -21,7 +21,7 @@ import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI } from "../mc";
 
 type ItemTypePlus = ItemType<string> & { decimals : number; };
 
-const feerates = [ 225000000, 225000000, 225000000, ];
+const feerates = [ 225000000, 300000000, 375000000, ];
 const feerateDD : ItemType<number>[] =
     [
     { label: "Slow",   value: 0 },
@@ -31,8 +31,14 @@ const feerateDD : ItemType<number>[] =
 
 export type SendViewSerializableProps =
     {
-    loadCount? : number;
-    errorMessage? : string;
+    loadCount?      : number;
+    errorMessage?   : string;
+    tokenDDValue?   : string;
+    feerateDDValue? : number;
+    amountStr?      : string;
+    toAddr?         : string;
+    gasPriceStr?    : string;
+    gasLimitStr?    : string;
     };
 
 export type SendViewProps = SendViewSerializableProps &
@@ -42,11 +48,16 @@ export type SendViewProps = SendViewSerializableProps &
     showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any) => any;
     };
 
-const AMOUNT_NOT_NUMBER_ERROR    = "The amount must be a number.";
-const AMOUNT_TOO_SMALL_ERROR     = "The amount must be more than zero.";
-const GAS_LIMIT_NOT_NUMBER_ERROR = "The gas limit must be a number greater than 0.";
-const GAS_PRICE_NOT_NUMBER_ERROR = "The gas price must be a number greater than 0.";
-const ADDRESS_NOT_OK_ERROR       = "The To Address is not valid.";
+const AMOUNT_NOT_NUMBER_ERROR        = "The amount must be a number.";
+const AMOUNT_TOO_SMALL_ERROR         = "The amount must be more than zero.";
+const AMOUNT_OVERDECIMALIZED_ERROR   = "The amount has too many decimals.";
+const GAS_LIMIT_NOT_NUMBER_ERROR     = "The gas limit must be a number greater than 0.";
+const GAS_PRICE_NOT_NUMBER_ERROR     = "The gas price must be a number greater than 0.";
+const ADDRESS_NOT_OK_ERROR           = "The To Address is not valid.";
+const MNS_NAME_NOT_OK_ERROR          = "The MNS name is not valid.";
+const MNS_NAME_NOT_MRX_ADDRESS_ERROR = "The MNS name resolves to something that's not an MRX address";
+const SEND_TO_EVM_ERROR              = "It's not possible to send to an EVM address.";
+const SEND_WIERDNESS_ERROR           = "Unable to send because of an unknown error."
 
 let loadCount : number = 1;
 let qrScannedAddress : string = "";
@@ -60,20 +71,22 @@ export function SendView(props : SendViewProps) : JSX.Element
     const am = MC.getMC().storage.accountManager;
 
     const [ tokenDDOpen, setTokenDDOpen ] = useState<boolean>(false);
-    const [ tokenDDValue, setTokenDDValue ] = useState<string>("");
+    const [ tokenDDValue, setTokenDDValue ] = useState<string>(props.tokenDDValue ? props.tokenDDValue : "");
     const [ tokenDDItems, setTokenDDItems ] = useState<ItemTypePlus[]>(tokenDropDownItems());
 
     const [ feerateDDOpen, setFeerateDDOpen ] = useState<boolean>(false);
-    const [ feerateDDValue, setFeerateDDValue ] = useState<ValueType | null>(1);
+    const [ feerateDDValue, setFeerateDDValue ] = useState<number>(props.feerateDDValue ? props.feerateDDValue : 0);
     const [ feerateDDItems, setFeerateDDItems ] = useState<ItemType<number>[]>(feerateDD);
 
-    const [ amountStr, setAmountStr ] = useState<string>("");
-    const [ toAddr, setToAddr ] = useState<string>("");
+    const [ amountStr, setAmountStr ] = useState<string>(props.amountStr ? props.amountStr : "");
+    const [ toAddr, setToAddr ] = useState<string>(props.toAddr ? props.toAddr : "");
     const [ balanceStr, setBalanceStr ] = useState<string>(formatAccountBalanceStr());
-    const [ gasPriceStr, setGasPriceStr ] = useState<string>(DEFAULT_GAS_PRICE_SATOSHI.toString());
-    const [ gasLimitStr, setGasLimitStr ] = useState<string>(DEFAULT_GAS_LIMIT.toString());
+    const [ gasPriceStr, setGasPriceStr ] = useState<string>(props.gasPriceStr ? props.gasPriceStr : DEFAULT_GAS_PRICE_SATOSHI.toString());
+    const [ gasLimitStr, setGasLimitStr ] = useState<string>(props.gasLimitStr ? props.gasLimitStr : DEFAULT_GAS_LIMIT.toString());
     const [ tacc, setTacc ] = useState<number>(am.current.tkm.tokenArrayChangeCount);
     const [ errorMessage, setErrorMessage ] = useState<string>("");
+
+    let sendAlertOut : boolean = false;
 
     if (tacc != am.current.tkm.tokenArrayChangeCount)
         {
@@ -82,7 +95,7 @@ export function SendView(props : SendViewProps) : JSX.Element
         setTokenDDValue("");
         }
     if (!props.errorMessage) props.errorMessage = "";
-    if (props.loadCount == loadCount++ && props.errorMessage != errorMessage) setErrorMessage(props.errorMessage);
+    if (props.loadCount == loadCount && props.errorMessage != errorMessage) setErrorMessage(props.errorMessage);
     if (qrScannedAddress.length)
         {
         setToAddr(qrScannedAddress);
@@ -146,16 +159,36 @@ export function SendView(props : SendViewProps) : JSX.Element
 
     function onSend() : void
         {
-        if (!MC.validateMetrixAddress(toAddr))
+        if (!sendAlertOut)
             {
-            setErrorMessage(ADDRESS_NOT_OK_ERROR);
-            return;
+            sendAlertOut = true;
+            Alert.alert("Send?", `Confirm sending.`,
+                [
+                { text: "Cancel", onPress: () : void => { sendAlertOut = false;         }, style: "cancel" },
+                { text: "Send",   onPress: () : void => { sendAlertOut = false; send(); }                  }
+                ]);
+            }
+        }
+
+    function send() : void
+        {
+        const syntax = MC.anaylizeAddressSyntax(toAddr);
+        switch (syntax)
+            {
+            case ADDRESS_SYNTAX.INVALID: setErrorMessage(ADDRESS_NOT_OK_ERROR); return;
+            case ADDRESS_SYNTAX.EVM:     setErrorMessage(SEND_TO_EVM_ERROR);    return;
+            default: break;
             }
         const decimals : number = getDecimals();
         const amountToSendStr = validateAndSatoshizeFloatStr(amountStr, decimals);
         if (!amountToSendStr.length)
             {
             setErrorMessage(AMOUNT_NOT_NUMBER_ERROR);
+            return;
+            }
+        if (noumberOfDecimals(amountStr) > decimals)
+            {
+            setErrorMessage(AMOUNT_OVERDECIMALIZED_ERROR);
             return;
             }
         const amountToSend : BigInteger = toBigInteger(amountToSendStr);
@@ -166,9 +199,9 @@ export function SendView(props : SendViewProps) : JSX.Element
             }
         clearError();
         if (tokenDDValue == "")
-            sendMRX(amountToSend, amountToSendStr);
+            resolveMnsAndSendMRX(syntax, amountToSend, amountToSendStr);
         else
-            sendToken(amountToSend);
+            resolveMnsAndSendToken(syntax, amountToSend);
         }
 
     function getDecimals() : number
@@ -184,38 +217,53 @@ export function SendView(props : SendViewProps) : JSX.Element
         return decimals;
         }
 
-    function sendMRX(amountToSend : BigInteger, amountToSendStr : string) : void
+    function resolveMnsAndSendMRX(syntax : ADDRESS_SYNTAX, amountToSend : BigInteger, amountToSendStr : string) : void
         {
         props.showWorkingAsync((onWorkDone : (result : WorkFunctionResult) => any) : void =>
             {
-            const numberToSend : number = Number.parseInt(amountToSendStr); // Done this way to be ready for when wallet supports BigInt or similar.
-            am.current.wm.wallet.send(toAddr, numberToSend, { feeRate: feerates[feerateDDValue as number] }).then((result : Insight.ISendRawTxResult) : void =>
+            if (syntax == ADDRESS_SYNTAX.MNS)
                 {
-                const params : TransactionSentViewSerializableProps = { amountStr: formatSatoshi(amountToSend, MRX_DECIMALS), symbol: "MRX", destinationAddr: toAddr, txid: result.txid };
-                onWorkDone({ nextScreen: WALLET_SCREENS.TX_SENT, nextScreenParams: params });
-                })
-            .catch((e : any) : void =>
-                {
-                const params : SendViewSerializableProps = { loadCount: loadCount, errorMessage: MC.errorToString(e) };
-                onWorkDone({ nextScreen: WALLET_SCREENS.SEND, nextScreenParams: params });
-                });
+                am.current.wm.ninfo.mnsResolveMRX(toAddr).then((targetAddress : string) : void =>
+                    {
+                    if (targetAddress.length)
+                        {
+                        if (MC.validateMrxAddress(targetAddress))
+                            sendMRX(targetAddress, amountToSend, amountToSendStr, onWorkDone);
+                        else
+                            finishWorkWithError(MNS_NAME_NOT_MRX_ADDRESS_ERROR, onWorkDone);
+                        }
+                    else
+                        finishWorkWithError(MNS_NAME_NOT_OK_ERROR, onWorkDone);
+                    })
+                .catch((e : any) : void => MC.raiseError(e, `SendView resolveMnsAndSendMRX`));
+                }
+            else
+                 sendMRX(toAddr, amountToSend, amountToSendStr, onWorkDone);
             });
         }
 
-    function sendToken(amountToSend : BigInteger) : void
+    function sendMRX(targetAddress : string, amountToSend : BigInteger, amountToSendStr : string, onWorkDone : (result : WorkFunctionResult) => any) : void
         {
-        let gasLimit : number;
-        if (gasLimitStr != "")
+        const amountAsNumber : number = Number.parseInt(amountToSendStr); // Done this way to be ready for when wallet supports BigInt or similar.
+        am.current.wm.wallet.send(targetAddress, amountAsNumber, { feeRate: feerates[feerateDDValue] }).then((result : Insight.ISendRawTxResult) : void =>
             {
-            if (!validateIntStr(gasLimitStr, true))
+            if (result.txid)
                 {
-                setErrorMessage(GAS_LIMIT_NOT_NUMBER_ERROR);
-                return;
+                const mnsName = toAddr == targetAddress ? `` : toAddr;
+                const params : TransactionSentViewSerializableProps = { amountStr: formatSatoshi(amountToSend, MRX_DECIMALS), symbol: "MRX", destinationAddr: targetAddress, destinationMnsName: mnsName, txid: result.txid };
+                onWorkDone({ nextScreen: WALLET_SCREENS.TX_SENT, nextScreenParams: params });
                 }
-            gasLimit = Number.parseInt(gasLimitStr);
-            }
-        else
-            gasLimit = DEFAULT_GAS_LIMIT;
+            else
+                {
+                const errMsg : string = (result as any).message ? (result as any).message : SEND_WIERDNESS_ERROR;
+                finishWorkWithError(errMsg, onWorkDone);
+                }
+            })
+        .catch((e : any) : void => finishWorkWithError(MC.errorToString(e), onWorkDone));
+        }
+
+    function resolveMnsAndSendToken(syntax : ADDRESS_SYNTAX, amountToSend : BigInteger) : void
+        {
         let gasPrice : number;
         if (gasPriceStr != "")
             {
@@ -228,20 +276,57 @@ export function SendView(props : SendViewProps) : JSX.Element
             }
         else
             gasPrice = DEFAULT_GAS_PRICE_SATOSHI;
-        const tk : MRC20Token = am.current.tkm.findToken(tokenDDValue! as string)!;
+        let gasLimit : number;
+        if (gasLimitStr != "")
+            {
+            if (!validateIntStr(gasLimitStr, true))
+                {
+                setErrorMessage(GAS_LIMIT_NOT_NUMBER_ERROR);
+                return;
+                }
+            gasLimit = Number.parseInt(gasLimitStr);
+            }
+        else
+            gasLimit = DEFAULT_GAS_LIMIT;
         props.showWorkingAsync((onWorkDone : (result : WorkFunctionResult) => any) : void =>
             {
-            am.current.wm.mrc20Send(tk.address, toAddr, amountToSend, gasLimit, gasPrice).then((txid : string) : void =>
+            if (syntax == ADDRESS_SYNTAX.MNS)
                 {
-                const params : TransactionSentViewSerializableProps = { amountStr: formatSatoshi(amountToSend, tk.decimals), symbol: tk.symbol, destinationAddr: toAddr, txid: txid };
-                onWorkDone({ nextScreen: WALLET_SCREENS.TX_SENT, nextScreenParams: params });
-                })
-            .catch((e : any) : void =>
-                {
-                const params : SendViewSerializableProps = { loadCount: loadCount, errorMessage: MC.errorToString(e) };
-                onWorkDone({ nextScreen: WALLET_SCREENS.SEND, nextScreenParams: params });
-                });
+                am.current.wm.ninfo.mnsResolveMRX(toAddr).then((targetAddress : string) : void =>
+                    {
+                    if (targetAddress.length)
+                        {
+                        if (MC.validateMrxAddress(targetAddress))
+                            sendToken(targetAddress, gasPrice, gasLimit, amountToSend, onWorkDone);
+                        else
+                            finishWorkWithError(MNS_NAME_NOT_MRX_ADDRESS_ERROR, onWorkDone);
+                        }
+                    else
+                        finishWorkWithError(MNS_NAME_NOT_OK_ERROR, onWorkDone);
+                    })
+                .catch((e : any) : void => MC.raiseError(e, `SendView resolveMnsAndSendToken`));
+                }
+            else
+                sendToken(toAddr, gasPrice, gasLimit, amountToSend, onWorkDone);
             });
+        }
+
+    function sendToken(targetAddress : string, gasPrice : number, gasLimit : number, amountToSend : BigInteger, onWorkDone : (result : WorkFunctionResult) => any) : void
+        {
+        const tk : MRC20Token = am.current.tkm.findToken(tokenDDValue! as string)!;
+        am.current.wm.mrc20Send(tk.address, targetAddress, amountToSend, gasLimit, gasPrice).then((txid : string) : void =>
+            {
+            const mnsName = toAddr == targetAddress ? `` : toAddr;
+            const params : TransactionSentViewSerializableProps = { amountStr: formatSatoshi(amountToSend, tk.decimals), symbol: tk.symbol, destinationAddr: targetAddress, destinationMnsName: mnsName, txid: txid };
+            onWorkDone({ nextScreen: WALLET_SCREENS.TX_SENT, nextScreenParams: params });
+            })
+        .catch((e : any) : void => finishWorkWithError(MC.errorToString(e), onWorkDone));
+        }
+
+    function finishWorkWithError(errorMsg : string, onWorkDone : (result : WorkFunctionResult) => any) : void
+        {
+        const params : SendViewSerializableProps = { loadCount: loadCount, errorMessage: errorMsg, tokenDDValue: tokenDDValue, feerateDDValue: feerateDDValue, amountStr: amountStr, toAddr: toAddr, gasPriceStr: gasPriceStr, gasLimitStr: gasLimitStr };
+        onWorkDone({ nextScreen: WALLET_SCREENS.SEND, nextScreenParams: params });
         }
 
     function formatAccountBalanceStr() : string
@@ -252,7 +337,7 @@ export function SendView(props : SendViewProps) : JSX.Element
             }
         else
             {
-            const tk : MRC20Token = am.current.tkm.findToken(tokenDDValue as string)!;
+            const tk : MRC20Token = am.current.tkm.findToken(tokenDDValue)!;
             if (tk.balanceSat.greaterOrEquals(BIG_0)) return formatSatoshi(tk.balanceSat, tk.decimals) + " " + tk.symbol;
             }
         return LOADING_STR;
@@ -315,8 +400,16 @@ export function SendView(props : SendViewProps) : JSX.Element
         setToAddr(newToAddr.trim());
         }
 
+    function onEndEditingToAddr(nsEvent: NativeSyntheticEvent<TextInputEndEditingEventData>) : void
+        {
+        const trimmedToAddr = toAddr.trim();
+        if (!trimmedToAddr.length) return;
+        if (trimmedToAddr.length != toAddr.length) onChangeToAddr(trimmedToAddr);
+        }
+
     function clearError() : void
         {
+        loadCount++;
         if (errorMessage.length) setErrorMessage("");
         }
 
@@ -333,13 +426,6 @@ export function SendView(props : SendViewProps) : JSX.Element
             }
         else
             return null;
-        }
-
-    function onEndEditingToAddr(nsEvent: NativeSyntheticEvent<TextInputEndEditingEventData>) : void
-        {
-        const trimmedToAddr = toAddr.trim();
-        if (!trimmedToAddr.length) return;
-        if (trimmedToAddr.length != toAddr.length) onChangeToAddr(trimmedToAddr);
         }
 
     function renderFeeOrGas() : JSX.Element
@@ -382,7 +468,7 @@ export function SendView(props : SendViewProps) : JSX.Element
                 <View style = {{ height: 24 }} />
                 <DoubleDoublet titleL="From Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name }/>
                 <View style={{ height: 7 }} />
-                <SimpleDoublet title="From Account Address:" text={ am.current.wm.address }/>
+                <AddressQuasiDoublet title="From Account Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="From Account Balance:" text={ balanceStr }/>
                 <View style={{ height: 14 }} />

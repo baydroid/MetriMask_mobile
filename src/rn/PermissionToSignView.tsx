@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, ScrollView } from "react-native";
 
 import { MC } from "../mc";
-import { commonStyles, SimpleDoublet, DoubleDoublet, SimpleButtonPair, BurgerlessTitleBar } from "./common";
+import { commonStyles, SimpleDoublet, DoubleDoublet, SimpleButtonPair, BurgerlessTitleBar, AddressQuasiDoublet } from "./common";
 
 
 
@@ -28,7 +28,7 @@ export function PermissionToSignView(props : PermissionToSignViewProps) : JSX.El
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Siging Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
-                <SimpleDoublet title="Signing Account Address:" text={ am.current.wm.address }/>
+                <AddressQuasiDoublet title="Signing Account Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Signature Requesting Webpage:" text={ props.requestingURL }/>
                 <View style={{ height: 7 }} />
