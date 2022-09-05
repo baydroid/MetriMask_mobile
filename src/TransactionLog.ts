@@ -139,7 +139,7 @@ export class TransactionLog
                         {
                         if (this.txMap.has(rti.txid))
                             moveForwards = true;
-                        else if (!newTxsSet.has(rti.txid))
+                        else if (!newTxsSet.has(rti.txid) && rti.time && rti.time > 0)
                             {
                             newTxsSet.add(rti.txid);
                             newTxs.push(new TransactionInfo(rti, wm.address));
@@ -183,6 +183,7 @@ export class TransactionLog
         let pageNum : number = 0;
         const newTxs : TransactionInfo[] = [ ];
         const newTxsSet : Set<string> = new Set<string>();
+        let ignoredCount : number = 0;
         return new Promise<number>((resolve : (newTxCount : number) => any, reject : (e : any) => any) : void =>
             {
             const get1Page = () : void =>
@@ -195,8 +196,13 @@ export class TransactionLog
                             {
                             if (!newTxsSet.has(rti.txid))
                                 {
-                                newTxsSet.add(rti.txid);
-                                newTxs.push(new TransactionInfo(rti, wm.address));
+                                if (rti.time && rti.time > 0)
+                                    {
+                                    newTxsSet.add(rti.txid);
+                                    newTxs.push(new TransactionInfo(rti, wm.address));
+                                    }
+                                else
+                                    ignoredCount++;
                                 }
                             }
                         else
@@ -204,7 +210,7 @@ export class TransactionLog
                             newTxs.sort((a : TransactionInfo, b : TransactionInfo) : number => a.compareTo(b));
                             this.txArray = newTxs.concat(this.txArray);
                             for (const ti of newTxs) this.txMap.set(ti.id, ti);
-                            this.lastTxCount = info.txApperances;
+                            this.lastTxCount = info.txApperances - ignoredCount;
                             this.lastUnconfirmedTxCount = info.unconfirmedTxApperances;
                             resolve(newTxs.length);
                             return;

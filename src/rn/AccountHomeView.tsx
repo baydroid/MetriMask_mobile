@@ -9,7 +9,7 @@ import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker
 import { TabView, TabBar, SceneMap, SceneRendererProps, NavigationState } from 'react-native-tab-view';
 import { Scene } from "react-native-tab-view/lib/typescript/types";
 
-import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet } from "./common";
+import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet, COLOR_BLACK, COLOR_DARKISH_PURPLE, COLOR_DARK_PURPLE, COLOR_LIGHT_GREY, COLOR_WHITE, COLOR_PURPLE_RIPPLE, COLOR_LIGHTISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
@@ -24,7 +24,7 @@ const accountHomeStyles = StyleSheet.create
     containingView:
         {
         flexDirection: "column",
-        backgroundColor: "white",
+        backgroundColor: COLOR_WHITE,
         margin: 0,
         padding: 0,
         border: 0,
@@ -219,6 +219,11 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
         mc.openUrlInNewTab(am.current.wm.ninfo.txUrlHeader + ti.id);
         }
 
+    function onShowToken(tk : MRC20Token) : void
+        {
+        mc.openUrlInNewTab(am.current.wm.ninfo.tokenUrlHeader + tk.address);
+        }
+
     function onLoadMoreTxs() : void
         {
         if (!tokenRefreshInProgress && !txLoadInProgress)
@@ -262,14 +267,14 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             function renderTxLogEntry(ti : TransactionInfo) : JSX.Element
                 {
                 return (
-                    <TouchableRipple rippleColor="#FFC0FF" onPress={ () : void => onShowTx(ti) }>
+                    <TouchableRipple rippleColor={ COLOR_PURPLE_RIPPLE } onPress={ () : void => onShowTx(ti) }>
                         <View style={{ width: "100%", paddingLeft: 24, paddingRight: 24, paddingTop: 9, paddingBottom: 9 }}>
                             <View style={ commonStyles.rowContainerV2 }>
-                                <Text style={{ color: "#000000" }}>{ formatSatoshi(ti.valueSat, MRX_DECIMALS) }</Text>
+                                <Text style={{ color: COLOR_BLACK }}>{ formatSatoshi(ti.valueSat, MRX_DECIMALS) }</Text>
                                 <View style={{ flex: 1 }}/>
-                                <Text style={{ color: "#000000" }}>{ ti.dateTimeStr }</Text>
+                                <Text style={{ color: COLOR_BLACK }}>{ ti.dateTimeStr }</Text>
                             </View>
-                            <Text numberOfLines={ 1 } ellipsizeMode="middle">{ ti.id }</Text>
+                            <Text style={{ color: COLOR_MIDDLE_GREY }} numberOfLines={ 1 } ellipsizeMode="middle">{ ti.id }</Text>
                         </View>
                     </TouchableRipple>
                     );
@@ -280,7 +285,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 return (
                     <>
                         { renderTxLogEntry(ti) }
-                        <View style={{ height: 3, backgroundColor: "#E0E0E0" }}/>
+                        <View style={{ height: 3, backgroundColor: COLOR_LIGHT_GREY }}/>
                         <View style={{ height: 24 }}/>
                         <View style={ commonStyles.squeezed }>
                             <SimpleButton text="Load More Transactions" disabled={ disableMoreTxs } onPress = { onLoadMoreTxs }/>
@@ -292,7 +297,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 return (
                     <>
                         { renderTxLogEntry(ti) }
-                        <View style={{ height: 3, backgroundColor: "#E0E0E0" }}/>
+                        <View style={{ height: 3, backgroundColor: COLOR_LIGHT_GREY }}/>
                     </>
                     );
             }
@@ -310,20 +315,22 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             const name = mrc20.name.length ? mrc20.name : mrc20.address;
             const balance = mrc20.infoIsValid ? formatSatoshi(mrc20.balanceSat, mrc20.decimals) + " " + mrc20.symbol : NO_INFO_STR;
             return (
-                <>
-                    <View style={ commonStyles.rowContainerV2 }>
-                        <View style={{ paddingLeft: 24, paddingRight: 0, paddingTop: 9, paddingBottom: 9 }}>
-                            <Text style={{ color: "#000000" }}>{ name }</Text>
-                            <Text>{ balance }</Text>
+                <TouchableRipple style={{ flex: 1 }} rippleColor={ COLOR_PURPLE_RIPPLE } onPress={ () : void => onShowToken(mrc20) }>
+                    <View>
+                        <View style={ commonStyles.rowContainerV2 }>
+                            <View style={{ paddingLeft: 24, paddingRight: 0, paddingTop: 9, paddingBottom: 9 }}>
+                                <Text style={{ color: COLOR_BLACK }}>{ name }</Text>
+                                <Text style={{ color: COLOR_MIDDLE_GREY }}>{ balance }</Text>
+                            </View>
+                            <View style={{ flex: 1 }}/>
+                            <View style={ accountHomeStyles.containingView }>
+                                <IconButton rippleColor={ COLOR_PURPLE_RIPPLE } style={ commonStyles.icon } size={ 24 } icon="close" onPress={ () : void => onRemoveToken(mrc20) }/>
+                                <View style={{ flex: 1 }}/>
+                            </View>
                         </View>
-                        <View style = {{ flex: 1 }}/>
-                        <View style = { accountHomeStyles.containingView }>
-                            <IconButton rippleColor="#FFC0FF" style = { commonStyles.icon } size = { 24 } icon = "close" onPress = { () : void => onRemoveToken(mrc20) }/>
-                            <View style = {{ flex: 1 }}/>
-                        </View>
+                        <View style={{ height: 3, backgroundColor: COLOR_LIGHT_GREY }}/>
                     </View>
-                    <View style={{ height: 3, backgroundColor: "#E0E0E0" }}/>
-                </>
+                </TouchableRipple>
                 );
             }
 
@@ -338,11 +345,11 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             {
             if (scene.focused)
                 return (
-                    <Text style={{ color: "#000000", margin: 0 }}>{ scene.route.title }</Text>
+                    <Text style={{ color: COLOR_BLACK, margin: 0 }}>{ scene.route.title }</Text>
                     );
             else
                 return (
-                    <Text style={{ margin: 0 }}>{ scene.route.title }</Text>
+                    <Text style={{ color: COLOR_MIDDLE_GREY, margin: 0 }}>{ scene.route.title }</Text>
                     );
             }
 
@@ -350,8 +357,8 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             <TabBar
                 { ...props }
                 renderLabel={ renderLabel }
-                indicatorStyle={{ backgroundColor: "#600060" }}
-                style={{ backgroundColor: "#FFE0FF" }}
+                indicatorStyle={{ backgroundColor: COLOR_DARK_PURPLE }}
+                style={{ backgroundColor: COLOR_LIGHTISH_PURPLE }}
                 />
             );
         }
@@ -359,9 +366,9 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
     function DividerBar() : JSX.Element
         {
         if (disableMoreTxs)
-            return (<ProgressBar style = {{ height: 3 }} indeterminate color = "#600060" />);
+            return (<ProgressBar style={{ height: 3 }} indeterminate color={ COLOR_DARK_PURPLE } />);
         else
-            return (<ProgressBar style = {{ height: 3 }} progress = { 1 } color = "#600060" />);
+            return (<ProgressBar style={{ height: 3 }} progress={ 1 } color={ COLOR_DARK_PURPLE } />);
         }
 
     return (
@@ -370,10 +377,10 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 20 }} />
             <View style={ commonStyles.squeezed }>
-                <Text>Account:</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY}}>Account:</Text>
                 <DropDownPicker
-                    dropDownContainerStyle={{ borderColor: "#900090" }}
-                    style={{ borderColor: "#900090" }}
+                    dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    style={{ borderColor: COLOR_DARKISH_PURPLE }}
                     maxHeight={ 400 }
                     items={ accountDDItems }
                     open={ accountDDOpen }

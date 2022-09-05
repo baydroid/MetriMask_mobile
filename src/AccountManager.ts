@@ -11,7 +11,7 @@ import { MRC20Token } from './MRC20.js';
 
 
 const SCRYPT_PARAMS_PASSWORD = { N: 512, r: 8, p: 1 };  // TODO adjust this for production, MetrisMask browser extension uses SCRYPT_PARAMS_PASSWORD = { N: 131072, r: 8, p: 1 };
-const POLLING_INTERVAL_SECS = 100;
+const POLLING_INTERVAL_SECS = 80;
 
 
 

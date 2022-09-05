@@ -30,20 +30,23 @@ export class NetInfo
     protected ownId : number;
     protected ownName : string;
     protected ownTxUrlHeader : string;
+    protected ownTokenUrlHeader : string;
     protected hostNetwork : Network;
 
-    public constructor(name : string, id : number, ownTxUrlHeader : string, network : Network)
+    public constructor(name : string, id : number, ownTxUrlHeader : string, ownTokenUrlHeader : string, network : Network)
         {
         this.ownName = name;
         this.ownId = id;
         this.ownTxUrlHeader = ownTxUrlHeader;
+        this.ownTokenUrlHeader = ownTokenUrlHeader;
         this.hostNetwork = network;
         }
 
-    public get name()        : string  { return this.ownName;        }
-    public get id()          : number  { return this.ownId;          }
-    public get txUrlHeader() : string  { return this.ownTxUrlHeader; }
-    public get network()     : Network { return this.hostNetwork;    }
+    public get name()           : string  { return this.ownName;           }
+    public get id()             : number  { return this.ownId;             }
+    public get txUrlHeader()    : string  { return this.ownTxUrlHeader;    }
+    public get tokenUrlHeader() : string  { return this.ownTokenUrlHeader; }
+    public get network()        : Network { return this.hostNetwork;       }
 
     public mnsResolveEvm(mnsName : string) : Promise<string>
         {
@@ -94,9 +97,9 @@ export class NetInfoWithMns extends NetInfo
     private mnsContract : MetrixContract;
     private reverseResolver : DefaultReverseResolver;
 
-    constructor(name : string, id : number, ownTxUrlHeader : string, network : Network)
+    constructor(name : string, id : number, ownTxUrlHeader : string, ownTokenUrlHeader : string, network : Network)
         {
-        super(name, id, ownTxUrlHeader, network);
+        super(name, id, ownTxUrlHeader, ownTokenUrlHeader, network);
         const netType : NetworkType = name as NetworkType;
         this.provider = new APIProvider(netType);
         this.mns = new MNS(netType, this.provider, getMNSAddress(netType));
@@ -210,9 +213,9 @@ export class NetInfoManager
 
     public constructor()
         {
-        this.infoArray.push(new NetInfoWithMns("MainNet", NET_ID.MAIN, "https://explorer.metrixcoin.com/tx/",         networks.mainnet));
-        this.infoArray.push(new NetInfoWithMns("TestNet", NET_ID.TEST, "https://testnet-explorer.metrixcoin.com/tx/", networks.testnet));
-        this.infoArray.push(new NetInfo       ("RegTest", NET_ID.REG,  "http://localhost/tx/",                        networks.regtest));
+        this.infoArray.push(new NetInfoWithMns("MainNet", NET_ID.MAIN, "https://explorer.metrixcoin.com/tx/",         "https://explorer.metrixcoin.com/mrc20/",         networks.mainnet));
+        this.infoArray.push(new NetInfoWithMns("TestNet", NET_ID.TEST, "https://testnet-explorer.metrixcoin.com/tx/", "https://testnet-explorer.metrixcoin.com/mrc20/", networks.testnet));
+        this.infoArray.push(new NetInfo       ("RegTest", NET_ID.REG,  "https://localhost/tx/",                       "https://localhost/mrc20/",                       networks.regtest));
         for (const ni of this.infoArray) this.infosByNmae.set(ni.name, ni);
         }
 

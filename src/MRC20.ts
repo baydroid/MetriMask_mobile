@@ -234,7 +234,7 @@ export class MRC20Token
 
     public static fromSerializable(so : SerializableMRC20Token) : MRC20Token
         {
-        const tk = new MRC20Token(so.address!);
+        const tk = new MRC20Token(so.address);
         tk.updateInfoFromSerializable(so);
         return tk;
         }

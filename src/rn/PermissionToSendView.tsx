@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 
 import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, MRX_DECIMALS } from "../mc";
-import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet } from "./common";
+import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, COLOR_BLACK, COLOR_MIDDLE_GREY } from "./common";
 import { ContractCallParams } from "../WalletManager"
 
 
@@ -125,7 +125,7 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ ...commonStyles.squeezed, flexDirection: "column", flex: 1 }}>
                 <View style={{ height: 24 }} />
-                <Text style={{ color: "#000000" }}>A web page is asking your permission to send a transaction to a contract.</Text>
+                <Text style={{ color: COLOR_BLACK }}>A web page is asking your permission to send a transaction to a contract.</Text>
                 <View style={{ height: 24 }} />
                 <DoubleDoublet titleL="Sending Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
@@ -145,10 +145,10 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Max Transaction Fee:" text={ maxTxFee.toString() + " MRX" }/>
                 <View style={{ height: 7 }} />
-                <Text>Raw Contract Call:</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY}}>Raw Contract Call:</Text>
                 <View style={{ height: 1 }} />
                 <ScrollView style={ commonStyles.borderedScroller }>
-                    <Text style={{ color: "#000000" }}>{ props.params.args[1] }</Text>
+                    <Text style={{ color: COLOR_BLACK }}>{ props.params.args[1] }</Text>
                 </ScrollView>
                 <View style={{ height: 24 }} />
                 <SimpleButtonPair

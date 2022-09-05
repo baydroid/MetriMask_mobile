@@ -9,7 +9,7 @@ import { nim } from "../NetInfo";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { NET_ID } from "../NetInfo";
-import { commonStyles, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage } from "./common";
+import { commonStyles, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
 import { Insight } from "metrixjs-wallet";
 
 
@@ -197,10 +197,10 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 24 }}/>
             <View style={ commonStyles.squeezed }>
-                <Text>Account Network:</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY}}>Account Network:</Text>
                 <DropDownPicker
-                    dropDownContainerStyle={{ borderColor: "#900090" }}
-                    style={{ borderColor: "#900090" }}
+                    dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    style={{ borderColor: COLOR_DARKISH_PURPLE }}
                     items = { networkDDItems }
                     open = { networkDDOpen }
                     value = { networkDDValue }

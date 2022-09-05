@@ -2,13 +2,14 @@ import { Insight } from "metrixjs-wallet";
 
 import { BrowserTabContextBase } from "./rn/BrowserAllTabsView";
 import { ContractCallParams, RPC_METHOD } from "./WalletManager";
-import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, SATOSHIS_PER_MRX } from "./mc";
+import { ADDRESS_SYNTAX, DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, SATOSHIS_PER_MRX } from "./mc";
 import { AccountManager } from "./AccountManager";
 
 
 
 const NOT_LOGGED_IN_ERROR      = "Not logged in. Please log in to MetriMask first.";
 const USER_SAID_NO_ERROR       = "The user refused permission.";
+const MNS_UNRESOLVABLE_ERROR   = "Unresolvable MNS name.";
 
 const METRIMASK_CONNECT        = "CONNECT";
 const METRIMASK_RAW_CALL       = "RAW_CALL";
@@ -297,7 +298,7 @@ export class BrowserTabContext extends BrowserTabContextBase
         if (message.method == RPC_METHOD.SEND_TO_CONTRACT)
             this.sendToContract(message);
         else if (message.method == RPC_METHOD.CALL_CONTRACT)
-            this.callContract(message);
+            this.resolveAndCallContract(message);
         else
             this.processReturn(message.returnId, null, "Unknown method parameter.");
         }
@@ -319,11 +320,35 @@ export class BrowserTabContext extends BrowserTabContextBase
                 message.args[2] = parseInt(amountSat)/SATOSHIS_PER_MRX;
                 message.args[3] = gasLimit;
                 message.args[4] = gasPrice/SATOSHIS_PER_MRX;
-                this.callContract(message);
+                this.resolveAndCallContract(message);
                 }
             else
                 this.processReturn(message.returnId, null, USER_SAID_NO_ERROR);
             });
+        }
+
+    private resolveAndCallContract(message : HTMLMessage) : void
+        {
+        const syntax : ADDRESS_SYNTAX = MC.anaylizeAddressSyntax(message.args[0]);
+        if (syntax == ADDRESS_SYNTAX.MNS)
+            {
+            this.am.current.wm.ninfo.mnsResolveEvm(message.args[0]).then((evmAddress : string) : void =>
+                {
+                if (evmAddress)
+                    {
+                    message.args[0] = evmAddress;
+                    this.callContract(message);
+                    }
+                else
+                    this.processReturn(message.returnId, null, MNS_UNRESOLVABLE_ERROR);
+                })
+            .catch((e : any) : any =>
+                {
+                this.processReturn(message.returnId, null, MC.errorToString(e));
+                });
+            }
+        else
+            this.callContract(message);
         }
 
     private callContract(message : HTMLMessage) : void

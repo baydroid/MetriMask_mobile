@@ -4,7 +4,7 @@ import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Te
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { AddressQuasiDoublet, commonStyles, DoubleDoublet, formatSatoshi, InvalidMessage, SimpleButton, SimpleDoublet, SimpleTextInput, TitleBar } from "./common";
+import { AddressQuasiDoublet, COLOR_BLACK, commonStyles, DoubleDoublet, formatSatoshi, InvalidMessage, SimpleButton, SimpleDoublet, SimpleTextInput, TitleBar } from "./common";
 
 
 
@@ -145,7 +145,7 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
                 <View style={{ height: 24 }} />
-                <Text style={{ color: "#000000" }}>To export the account in Wallet Interchange Format (WIF) enter the password below.</Text>
+                <Text style={{ color: COLOR_BLACK }}>To export the account in Wallet Interchange Format (WIF) enter the password below.</Text>
                 <View style={{ height: 24 }}/>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>

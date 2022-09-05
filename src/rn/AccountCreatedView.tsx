@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-import { commonStyles, SimpleButton, TitleBar } from "./common";
+import { COLOR_GREEN_WASH, commonStyles, SimpleButton, TitleBar } from "./common";
 import { WALLET_SCREENS } from "./WalletView";
 
 
@@ -16,7 +16,7 @@ const accountCreatedStyles = StyleSheet.create
         marginLeft: 24,
         marginRight: 24,
         padding: 12,
-        backgroundColor: "#E0FFE0",
+        backgroundColor: COLOR_GREEN_WASH,
         },
     mnemonicTextAndroid:
         {

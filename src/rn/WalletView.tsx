@@ -14,7 +14,7 @@ import { AcceptTokenView } from "./AcceptTokenView";
 import { SendView } from "./SendView";
 import { TransactionSentView } from "./TransactionSentView";
 import { QRAddressScanView, QR_SCANNER_TARGETS } from "./QRAddressScanView";
-import { handleHardwareBackPress, normalizeProps } from "./common";
+import { COLOR_WHITE, handleHardwareBackPress, normalizeProps } from "./common";
 import { ReceiveView } from "./ReceiveView";
 import { ExportAccountView } from "./ExportAccountView";
 import { AccountExportedView } from "./AccountExportedView";
@@ -22,6 +22,7 @@ import { SettingsView } from "./SettingsView";
 import { MC } from "../mc";
 import { WorkFunctionResult } from "./MainView";
 import { ResetAppView } from "./ResetAppView";
+import { ConfirmSendView } from "./ConfirmSendView";
 
 
 
@@ -31,7 +32,7 @@ const walletStyles = StyleSheet.create
         {
         height: "100%",
         width: "100%",
-        backgroundColor: "white",
+        backgroundColor: COLOR_WHITE,
         },
     });
 
@@ -49,12 +50,13 @@ export enum WALLET_SCREENS
     EXPORT_ACCOUNT   = "Wallet ExportAccount",
     ACCOUNT_EXPORTED = "Wallet AccountExported",
     SEND             = "Wallet Send",
+    CONFIRM_SEND     = "Wallet ConfirmSend",
     QR_SCANNER       = "Wallet QRScanner",
     TX_SENT          = "Wallet TransactionSent",
     RECEIVE          = "Wallet Receive",
     SETTINGS         = "Wallet Settings",
     NO_SUCH_SCREEN   = "Wallet NoSuchScreen",
-    RESET_APP        = "Wallet Reset App",
+    RESET_APP        = "Wallet ResetApp",
     };
 
 export type WalletViewAPI =
@@ -235,6 +237,19 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
             );
         }
 
+    function ConfirmSendScreen(props : any) : JSX.Element
+        {
+        walletNavigation = useNavigation<StackNavigationProp<any>>();
+        useEffect(handleHardwareBackPress);
+        return (
+            <SafeAreaView>
+                <View style={ walletStyles.screenHolder }>
+                    <ConfirmSendView { ...normalizeProps(props) } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
+                </View>
+            </SafeAreaView>
+            );
+        }
+
     function QRAddressScanScreen(props : any) : JSX.Element
         {
         walletNavigation = useNavigation<StackNavigationProp<any>>();
@@ -310,6 +325,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
             <WalletNavigator.Screen name={ WALLET_SCREENS.ADD_TOKEN        } component={ AddTokenScreen        }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.ACCEPT_TOKEN     } component={ AcceptTokenScreen     }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.SEND             } component={ SendScreen            }/>
+            <WalletNavigator.Screen name={ WALLET_SCREENS.CONFIRM_SEND     } component={ ConfirmSendScreen     }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.EXPORT_ACCOUNT   } component={ ExportAccountScreen   }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.ACCOUNT_EXPORTED } component={ AccountExportedScreen }/>
             <WalletNavigator.Screen name={ WALLET_SCREENS.QR_SCANNER       } component={ QRAddressScanScreen   }/>

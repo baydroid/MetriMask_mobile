@@ -4,7 +4,7 @@ import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { WebViewNavigation, WebViewNavigationEvent, WebViewErrorEvent } from "react-native-webview/lib/WebViewTypes";
 import { IconButton, ProgressBar } from 'react-native-paper';
 
-import { commonStyles } from "./common";
+import { COLOR_BLACK, COLOR_DARK_PURPLE, COLOR_PURPLE_RIPPLE, COLOR_WHITE, commonStyles } from "./common";
 import { MC } from "../mc";
 import { parseBrowserUrl } from "../parseBrowserUrl";
 
@@ -30,8 +30,8 @@ const browserTabStyles = StyleSheet.create
         {
         flex: 1,
         height: 40,
-        backgroundColor: "white",
-        borderRadius: 4,
+        color: COLOR_BLACK,
+        backgroundColor: COLOR_WHITE,
         borderWidth: 0,
         paddingLeft: 8,
         paddingRight: 8,
@@ -217,40 +217,41 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
     function WebProgressBar() : JSX.Element
         {
         if (showLoading)
-            return (<ProgressBar style = {{ height: 3 }} indeterminate color = "#600060" />);
+            return (<ProgressBar style = {{ height: 3 }} indeterminate color ={ COLOR_DARK_PURPLE }/>);
         else
-            return (<ProgressBar style = {{ height: 3 }} progress = { 1 } color = "#600060" />);
+            return (<ProgressBar style = {{ height: 3 }} progress = { 1 } color ={ COLOR_DARK_PURPLE }/>);
         }
 
     return (
-        <View style = { isVisible() ? commonStyles.containingView : browserTabStyles.hiddenContainingView } { ...(Platform.OS === "android" && isVisible() ? { collapsable: false } : { }) }>
+        <View style={ isVisible() ? commonStyles.containingView : browserTabStyles.hiddenContainingView } { ...(Platform.OS === "android" && isVisible() ? { collapsable: false } : { }) }>
             { menu ? menu() : null }
-            <View style = { commonStyles.topBar }>
-                <IconButton style = { commonStyles.icon } rippleColor="#FFC0FF" size = { 24 } icon = "menu" onPress = { onBurgerPressed }/>
+            <View style={ commonStyles.topBar }>
+                <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>
                 <TextInput
-                    style = { browserTabStyles.urlTextInput }
-                    onChangeText = { onChangeUrlTextInput }
-                    onEndEditing = { onEndEditintgUrlTextInput }
-                    value = { urlInputText == "about:blank" ? "" : urlInputText }
-                    placeholder = "www.website.com"
+                    style={ browserTabStyles.urlTextInput }
+                    onChangeText={ onChangeUrlTextInput }
+                    onEndEditing={ onEndEditintgUrlTextInput }
+                    value={ urlInputText == "about:blank" ? "" : urlInputText }
+                    placeholder="www.website.com"
+                    keyboardType="url"
                     />
             </View>
             <WebProgressBar/>
-            <View style = { browserTabStyles.webView }>
+            <View style={ browserTabStyles.webView }>
                 <WebView
-                    style = { browserTabStyles.webView }
-                    originWhitelist = {[ "*" ]}
-                    source = {{ uri: currentUrl }}
-                    injectedJavaScript = { initialJScript }
-                    injectedJavaScriptBeforeContentLoaded = { initialBeforeJScript }
-                    ref = { webref }
-                    sharedCookiesEnabled = { true }
+                    style={ browserTabStyles.webView }
+                    originWhitelist={[ "*" ]}
+                    source={{ uri: currentUrl }}
+                    injectedJavaScript={ initialJScript }
+                    injectedJavaScriptBeforeContentLoaded={ initialBeforeJScript }
+                    ref={ webref }
+                    sharedCookiesEnabled={ true }
                     allowsInlineMediaPlayback
-                    onLoad = { onWebViewLoad }
-                    onLoadStart = { onLoadStart }
-                    onLoadEnd = { onLoadEnd }
-                    onNavigationStateChange = { onWebViewNavigationStateChange }
-                    onMessage = { onWebViewMessage }
+                    onLoad={ onWebViewLoad }
+                    onLoadStart={ onLoadStart }
+                    onLoadEnd={ onLoadEnd }
+                    onNavigationStateChange={ onWebViewNavigationStateChange }
+                    onMessage={ onWebViewMessage }
                     />
             </View>
         </View>

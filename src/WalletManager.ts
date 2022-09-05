@@ -14,6 +14,7 @@ import { SerializableMRC20Token } from "./MRC20.js";
 
 
 const SCRYPT_PARAMS_PRIV_KEY = { N: 512, r: 8, p: 1 }; // TODO adjust this for production, MetriMask browser extension uses const SCRYPT_PARAMS_PRIV_KEY = { N: 8192, r: 8, p: 1 };
+const SEND_WIERDNESS_ERROR   = "Unable to send because of an unknown error."
 
 
 
@@ -336,7 +337,6 @@ export class WalletManager
                     })
                 .catch((e : any) =>
                     {
-                    error = Error(e);
                     finish();
                     });
                 }
@@ -346,7 +346,7 @@ export class WalletManager
                 outCount--;
                 if (!outCount)
                     {
-                    if (error || info.decimals == -1)
+                    if (error)
                         reject(error);
                     else
                         resolve(info);
@@ -379,7 +379,10 @@ export class WalletManager
             const p : Mweb3ContractSendParams = { senderAddress: this.walletAddress, methodArgs: [ recipientAddr, amount.toString() ], gasLimit: gasLimit.toFixed(MRX_DECIMALS), gasPrice: mrxPerGas };
             c.send("transfer", p).then((result : any) =>
                 {
-                resolve(result.txid);
+                if (result.txid)
+                    resolve(result.txid);
+                else
+                    reject(result.message ? result.message : SEND_WIERDNESS_ERROR);
                 })
             .catch(reject);
             });

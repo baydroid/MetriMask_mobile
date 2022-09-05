@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import { MC } from "../mc";
-import { commonStyles, TitleBar } from "./common";
+import { COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY, commonStyles, TitleBar } from "./common";
 
 
 
@@ -54,10 +54,10 @@ export function SettingsView(props : SettingsViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={ { height: 24 } }/>
             <View style={ commonStyles.squeezed }>
-                <Text>Lock wallet after inactive for:</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY}}>Lock wallet after inactive for:</Text>
                 <DropDownPicker
-                    dropDownContainerStyle={{ borderColor: "#900090" }}
-                    style={{ borderColor: "#900090" }}
+                    dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    style={{ borderColor: COLOR_DARKISH_PURPLE }}
                     maxHeight={ 300 }
                     flatListProps={{ initialNumToRender: 10 }}
                     items={ timeoutDDItems }

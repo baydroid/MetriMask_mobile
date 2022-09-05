@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { View } from "react-native";
-import { useNavigation } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
 
 import { ADDRESS_SYNTAX, MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
@@ -10,6 +8,7 @@ import { MRC20Token } from "../MRC20";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
 import { WorkFunctionResult } from "./MainView";
 import { Account } from "../Account";
+import { AcceptTokenViewSerializableProps } from "./AcceptTokenView";
 
 
 
@@ -39,7 +38,6 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
     const [ address, setAddress ] = useState<string>(props.address ? props.address : "");
     const [ errMsg, setErrMsg ] = useState<string>(props.errMsg ? props.errMsg : "");
     const isShowing = useRef<boolean>(false);
-    const walletNavigation = useNavigation<StackNavigationProp<any>>();
 
     useEffect(() : (() => void) =>
         {
@@ -66,12 +64,13 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
             {
             const acnt : Account = MC.getMC().storage.accountManager.current;
 
-            function part2(evmAddress : string) : void
+            function addByEvmAddress(evmAddress : string) : void
                 {
                 if (evmAddress.startsWith("0x")) evmAddress = evmAddress.substring(2);
                 acnt.createCandidateToken(evmAddress).then((tk : MRC20Token) : void =>
                     {
-                    walletNavigation.navigate(WALLET_SCREENS.ACCEPT_TOKEN, { token: tk.toSerializableObject(true) });
+                    const nextProps : AcceptTokenViewSerializableProps = syntax == ADDRESS_SYNTAX.MNS ? { mnsName: address, token: tk.toSerializableObject(true) } : { token: tk.toSerializableObject(true) };
+                    onWorkDone({ nextScreen: WALLET_SCREENS.ACCEPT_TOKEN, nextScreenParams: nextProps});
                     })
                 .catch((e : any) : void =>
                     {
@@ -81,7 +80,7 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
 
             function finsihWithError(errMsg : string) : void
                 {
-                walletNavigation.navigate(WALLET_SCREENS.ADD_TOKEN, { address, errMsg });
+                onWorkDone({ nextScreen: WALLET_SCREENS.ADD_TOKEN, nextScreenParams: { address, errMsg }});
                 }
 
             if (syntax == ADDRESS_SYNTAX.MNS)
@@ -89,14 +88,14 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
                 acnt.wm.ninfo.mnsResolveEvm(address).then((evmAddress : string) : void =>
                     {
                     if (evmAddress)
-                        part2(evmAddress);
+                        addByEvmAddress(evmAddress);
                     else
                         finsihWithError(MNS_NAME_NOT_OK_ERROR);
                     })
-                .catch((e : any) : void => MC.raiseError(e, "AddTokenView addToken"));
+                .catch((e : any) : void => MC.raiseError(e, "AddTokenView addToken mnsResolveEvm"));
                 }
             else
-                part2(address);
+                addByEvmAddress(address);
             });
         }
 
@@ -140,7 +139,7 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style={{ height: 24 }} />
-                <SimpleTextInput label="MRC20 Token Address:" value={ address } onChangeText={ (txt : string) : void => setAddress(txt) } icon="qrcode" onPressIcon={ onQRScanPressed }/>
+                <SimpleTextInput label="Token Address or MNS name:" value={ address } onChangeText={ (txt : string) : void => setAddress(txt) } icon="qrcode" onPressIcon={ onQRScanPressed }/>
                 <View style={{ height: 24 }} />
                 <SimpleButton text="Find Token" onPress={ addToken }/>
                 { renderInvalidAddress() }

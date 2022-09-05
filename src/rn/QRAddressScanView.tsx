@@ -7,7 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import { MC } from "../mc";
-import { commonStyles, InvalidMessage, SimpleButtonPair, TitleBar } from "./common";
+import { COLOR_DULL_GREEN, COLOR_GREEN, COLOR_WHITE, commonStyles, InvalidMessage, SimpleButtonPair, TitleBar } from "./common";
 import { WALLET_SCREENS } from "./WalletView";
 
 
@@ -106,7 +106,7 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
         function renderFlashButton(buttonFlashMode : any, iconName : string) : JSX.Element
             {
             const onPress = () : void => { if (flashMode != buttonFlashMode) setFlashMode(buttonFlashMode); };
-            const color : string = flashMode == buttonFlashMode ? "#00FF00" : "#30C030";
+            const color : string = flashMode == buttonFlashMode ? COLOR_GREEN : COLOR_DULL_GREEN;
             return (
                 <IconButton style={ commonStyles.icon } color={ color } size={ 24 } icon={ iconName } onPress={ onPress }/>
                 );
@@ -115,8 +115,8 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
         return (
             <View style={{ ...commonStyles.rowContainerV2, marginBottom: 24 }}>
                 <View style={{ width: 24 }}/>
-                <PaperButton onPress={ onCancel } style={{ borderColor: "#00FF00", borderWidth: 1 }} mode="outlined" uppercase={ false } color="#00FF00">
-                    <Text style={{ color: "#00FF00" }}>Cancel</Text>
+                <PaperButton onPress={ onCancel } style={{ borderColor: COLOR_GREEN, borderWidth: 1 }} mode="outlined" uppercase={ false } color={ COLOR_GREEN }>
+                    <Text style={{ color: COLOR_GREEN }}>Cancel</Text>
                 </PaperButton>
                 <View style={{ flex: 1 }}/>
                 { renderFlashButton(RNCamera.Constants.FlashMode.auto, "flash-auto") }
@@ -138,7 +138,7 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
                 <TitleBar title="Scan Address QR Code" onBurgerPressed={ props.onBurgerPressed }/>
                 <View style={ commonStyles.horizontalBar }/>
                 <View style={{ height: 24 }}/>
-                <ScrollView contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: "#FFFFFF", margin: 0, padding: 0 }}>
+                <ScrollView contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: COLOR_WHITE, margin: 0, padding: 0 }}>
                     <QRCodeScanner showMarker={ true } flashMode={ flashMode } onRead={ onRead } bottomContent={ renderScannerFooter() }/>
                 </ScrollView>
             </>

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { View } from "react-native";
+import { Insight } from "metrixjs-wallet";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
@@ -7,7 +10,6 @@ import { WorkFunctionResult } from "./MainView";
 import { commonStyles, InvalidMessage, TitleBar, SimpleButton, SimpleTextInput, DoubleDoublet } from "./common";
 import { AccountManager } from "../AccountManager";
 import { nim } from "../NetInfo";
-import { Insight } from "metrixjs-wallet";
 
 
 
@@ -35,6 +37,7 @@ export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
     const [ param, setParam ] = useState<string>(props.param ? props.param : "");
     const [ errorMsg, setErrorMsg ] = useState<string>(props.errMsg ? props.errMsg : "");
 
+    const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am : AccountManager = MC.getMC().storage.accountManager;
     const netName : string = nim().fromId(props.netId).name;
 
@@ -108,6 +111,12 @@ export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
         setParam(newMnemonic);
         }
 
+    function onCancel() : void
+        {
+        clearError();
+        walletNavigation.navigate(WALLET_SCREENS.CREATE_ACCOUNT);
+        }
+
     function clearError() : void
         {
         if (errorMsg.length) setErrorMsg("");
@@ -163,6 +172,8 @@ export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
                 { renderParamInput() }
                 <View style={{ height: 24 }}/>
                 <SimpleButton text="Import" onPress={ importAccount }/>
+                <View style={{ height: 24 }}/>
+                <SimpleButton text="Cancel" onPress={ onCancel }/>
                 { renderErrorMessage() }
             </View>
         </View>

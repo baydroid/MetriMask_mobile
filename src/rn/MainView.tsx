@@ -14,7 +14,7 @@ import UserInactivity, { UserInactivityAPI } from "../modified_node_modules/reac
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import BrowserView from "./BrowserView";
 import WalletView, { WALLET_SCREENS, WalletViewAPI } from "./WalletView";
-import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, SimpleButton, formatSatoshi, BurgerlessTitleBar, MenuOption } from "./common";
+import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, SimpleButton, formatSatoshi, BurgerlessTitleBar, MenuOption, COLOR_WHITE, COLOR_BLACK, COLOR_GREEN_WASH, COLOR_DARK_PURPLE } from "./common";
 import { PermissionToSignView, PermissionToSignViewProps } from "./PermissionToSignView";
 import { PermissionToSendView, PermissionToSendViewProps } from "./PermissionToSendView";
 import { ContractCallParams } from "../WalletManager";
@@ -30,12 +30,12 @@ const mainStyles = StyleSheet.create
         {
         height: "100%",
         width: "100%",
-        backgroundColor: "white",
+        backgroundColor: COLOR_WHITE,
         },
     topBar:
         {
         height: 36,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: COLOR_WHITE,
         flexDirection: "row",
         alignItems: "center"
         },
@@ -367,7 +367,7 @@ export default function MainView() : JSX.Element
                     <BurgerlessTitleBar title="Loading ..."/>
                     <View style={{ height: 48 }}/>
                     <View style={ commonStyles.squeezed }>
-                        <ProgressBar style={{ height: 12 }} indeterminate color = "#600060" />
+                        <ProgressBar style={{ height: 12 }} indeterminate color={ COLOR_DARK_PURPLE }/>
                     </View>
                 </View>
             </SafeAreaView>
@@ -385,12 +385,12 @@ export default function MainView() : JSX.Element
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={ commonStyles.squeezed }>
                         <View style={{ height: 24 }}/>
-                        <Text style={{ color: "#000000" }}>Something has gone wrong, and the app is no longer able to continue. (Sometimes the problem is no internet connection).</Text>
+                        <Text style={{ color: COLOR_BLACK }}>Something has gone wrong, and the app is no longer able to continue. (Sometimes the problem is no internet connection).</Text>
                         <View style={{ height: 6 }}/>
-                        <Text style={{ color: "#000000" }}>We apologize for the inconvenience. The following information is available about what went wrong:</Text>
+                        <Text style={{ color: COLOR_BLACK }}>We apologize for the inconvenience. The following information is available about what went wrong:</Text>
                         <View style={{ height: 24 }}/>
-                        <View style={{ backgroundColor: "#E0FFE0", padding: 6 }}>
-                            <Text style={{ color: "#000000" }}>{ emeergencyExitMsg }</Text>
+                        <View style={{ backgroundColor: COLOR_GREEN_WASH, padding: 6 }}>
+                            <Text style={{ color: COLOR_BLACK }}>{ emeergencyExitMsg }</Text>
                         </View>
                     </View>
                 </View>
@@ -487,7 +487,7 @@ export default function MainView() : JSX.Element
                         <View style={{ height: 6 }}/>
                         <View style={ commonStyles.rowContainerV2 }>
                             <View style={{ flex: 1 }}/>
-                            <Text style={{ color: "#000000" }}>{ formatSatoshi(bal, MRX_DECIMALS) + " MRX" }</Text>
+                            <Text style={{ color: COLOR_BLACK }}>{ formatSatoshi(bal, MRX_DECIMALS) + " MRX" }</Text>
                             <View style={{ flex: 1 }}/>
                         </View>
                     </>
@@ -504,7 +504,7 @@ export default function MainView() : JSX.Element
                     <View style={{ height: 12 }}/>
                     <View style={ commonStyles.rowContainerV2 }>
                         <View style={{ flex: 1 }}/>
-                        <Text style={{ color: "#000000" }}>{ am.current.accountName + " on " + am.current.wm.ninfo.name }</Text>
+                        <Text style={{ color: COLOR_BLACK }}>{ am.current.accountName + " on " + am.current.wm.ninfo.name }</Text>
                         <View style={{ flex: 1 }}/>
                     </View>
                     { renderBalance(am) }

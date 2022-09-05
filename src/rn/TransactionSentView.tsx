@@ -6,17 +6,17 @@ import { StackNavigationProp } from "@react-navigation/stack";
 
 import { WALLET_SCREENS } from "./WalletView";
 import { MC } from "../mc";
-import { commonStyles, SimpleDoublet, SimpleButton, TitleBar } from "./common";
+import { commonStyles, SimpleDoublet, SimpleButton, TitleBar, COLOR_BLACK } from "./common";
 
 
 
 export type TransactionSentViewSerializableProps =
     {
-    amountStr          : string;
-    symbol             : string;
-    destinationAddr    : string;
-    destinationMnsName : string;
-    txid               : string;
+    decimalizedAmountStr : string;
+    symbol               : string;
+    destinationAddr      : string;
+    destinationMnsName   : string;
+    txid                 : string;
     };
 
 export type TransactionSentViewProps = TransactionSentViewSerializableProps &
@@ -35,7 +35,7 @@ export function TransactionSentView(props : TransactionSentViewProps) : JSX.Elem
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style={{ height: 24 }} />
-                <Text style={{ color: "#000000" }}>{ `A transaction has been successfully started to send ${ props.amountStr } ${ props.symbol } from account ${ accountName } to ${ whereTo }. When the transaction has been confirmed the funds will be available at the destination.` }</Text>
+                <Text style={{ color: COLOR_BLACK }}>{ `A transaction has been successfully started to send ${ props.decimalizedAmountStr } ${ props.symbol } from account ${ accountName } to ${ whereTo }. When the transaction has been confirmed the funds will be available at the destination.` }</Text>
                 <View style={{ height: 24 }} />
                 <SimpleDoublet title="Transaction Id:" text={ props.txid }/>
                 <View style={{ height: 7 }} />

@@ -11,22 +11,31 @@ import { Account } from "../Account.js";
 
 
 
+export const COLOR_WHITE              : string = "#FFFFFF";
+export const COLOR_LIGHT_GREY         : string = "#E0E0E0";
+export const COLOR_MIDDLE_GREY        : string = "#808080";
+export const COLOR_BLACK              : string = "#000000";
+export const COLOR_DARK_PURPLE        : string = "#600060";
+export const COLOR_DARKISH_PURPLE     : string = "#900090";
+export const COLOR_GREEN_WASH         : string = "#E0FFE0";
+export const COLOR_PURPLE_RIPPLE      : string = "#FFC0FF";
+export const COLOR_DARK_PURPLE_RIPPLE : string = "#D080D0";
+export const COLOR_RED                : string = "#FF0000";
+export const COLOR_RED_WASH           : string = "#FFE0E0";
+export const COLOR_GREEN              : string = "#00FF00";
+export const COLOR_DULL_GREEN         : string = "#30C030";
+export const COLOR_LIGHT_PURPLE       : string = "#FFF0FF";
+export const COLOR_LIGHTISH_PURPLE    : string = "#FFE0FF";
+
+
+
 export const commonStyles = StyleSheet.create
     ({
     containingView:
         {
         flex: 1,
         flexDirection: "column",
-        backgroundColor: "white",
-        margin: 0,
-        padding: 0,
-        border: 0,
-        },
-    rowContainingView:
-        {
-        flex: 1,
-        flexDirection: "row",
-        backgroundColor: "white",
+        backgroundColor: COLOR_WHITE,
         margin: 0,
         padding: 0,
         border: 0,
@@ -45,14 +54,6 @@ export const commonStyles = StyleSheet.create
         border: 0,
         alignContent: "center",
         },
-    borderedScroller:
-        {
-        flex: 1,
-        padding: 6,
-        borderWidth: 1,
-        borderRadius: 4,
-        borderColor: "#900090"
-        },
     columnContainerV2:
         {
         flexDirection: "column",
@@ -60,6 +61,14 @@ export const commonStyles = StyleSheet.create
         padding: 0,
         border: 0,
         alignContent: "center",
+        },
+    borderedScroller:
+        {
+        flex: 1,
+        padding: 6,
+        borderWidth: 1,
+        borderRadius: 4,
+        borderColor: COLOR_DARKISH_PURPLE
         },
     icon:
         {
@@ -70,7 +79,7 @@ export const commonStyles = StyleSheet.create
     topBar:
         {
         height: 40,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: COLOR_WHITE,
         flexDirection: "row",
         alignItems: "center"
         },
@@ -82,12 +91,13 @@ export const commonStyles = StyleSheet.create
     titleText:
         {
         fontSize: 20,
+        color: COLOR_BLACK,
         fontWeight: "bold",
         },
     horizontalBar:
         {
         height: 3,
-        backgroundColor: "#600060",
+        backgroundColor: COLOR_DARK_PURPLE,
         },
     squeezed:
         {
@@ -101,8 +111,8 @@ export const commonStyles = StyleSheet.create
     invalidViewText:
         {
         padding: 24,
-        color: "#000000",
-        backgroundColor: "#FFE0E0",
+        color: COLOR_BLACK,
+        backgroundColor: COLOR_RED_WASH,
         fontWeight: "bold",
         },
     flex1:
@@ -178,10 +188,10 @@ export type InvalidMessageProps =
 export function InvalidMessage(props : InvalidMessageProps) : JSX.Element
     {
     return (
-        <View style = { commonStyles.invalidView }>
-            <View style = {{ flex: 1 }}/>
-            <Text style = { commonStyles.invalidViewText }>{ props.text }</Text>
-            <View style = {{ flex: 1 }}/>
+        <View style={ commonStyles.invalidView }>
+            <View style={{ flex: 1 }}/>
+            <Text style={ commonStyles.invalidViewText }>{ props.text }</Text>
+            <View style={{ flex: 1 }}/>
         </View>
         );
     }
@@ -197,12 +207,12 @@ export type TitleBarProps =
 export function TitleBar(props : TitleBarProps) : JSX.Element
     {
     return (
-        <View style = { commonStyles.topBar }>
-            <IconButton style = { commonStyles.icon } rippleColor="#FFC0FF" size = { 24 } icon = "menu" onPress = { props.onBurgerPressed }/>
-            <View style = { commonStyles.titleContainingView }>
-                <Text style = { commonStyles.titleText }>{ props.title }</Text>
+        <View style={ commonStyles.topBar }>
+            <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="menu" onPress={ props.onBurgerPressed }/>
+            <View style={ commonStyles.titleContainingView }>
+                <Text style={ commonStyles.titleText }>{ props.title }</Text>
             </View>
-            <IconButton style = { commonStyles.icon } size = { 24 } color = "#FFFFFF" icon = "menu"/>
+            <IconButton style={ commonStyles.icon } size={ 24 } color={ COLOR_WHITE } icon="menu"/>
         </View>
         );
     }
@@ -217,9 +227,9 @@ export type BurgerlessTitleBarProps =
 export function BurgerlessTitleBar(props : BurgerlessTitleBarProps) : JSX.Element
     {
     return (
-        <View style = { commonStyles.topBar }>
-            <View style = { commonStyles.titleContainingView }>
-                <Text style = { commonStyles.titleText }>{ props.title }</Text>
+        <View style={ commonStyles.topBar }>
+            <View style={ commonStyles.titleContainingView }>
+                <Text style={ commonStyles.titleText }>{ props.title }</Text>
             </View>
         </View>
         );
@@ -243,13 +253,13 @@ export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
             <View style={ commonStyles.rowContainerV2 }>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <Text>{ props.title }</Text>
-                    <Text style = {{ color: "#000000" }}>{ props.text }</Text>
+                    <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
+                    <Text style={{ color: COLOR_BLACK }}>{ props.text }</Text>
                 </View>
                 <View style={{ width: 3 }}/>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <IconButton style={ commonStyles.icon } rippleColor="#FFC0FF" size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
                 </View>
                 <View style={ commonStyles.flex1 }/>
             </View>
@@ -258,8 +268,8 @@ export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
     else
         return (
             <>
-                <Text>{ props.title }</Text>
-                <Text style = {{ color: "#000000" }}>{ props.text }</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
+                <Text style={{ color: COLOR_BLACK }}>{ props.text }</Text>
             </>
             );
     }
@@ -269,20 +279,22 @@ export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
 export type AddressQuasiDoubletProps =
     {
     title    : string;
-    acnt     : Account;
+    acnt?    : Account;
+    address? : string;
+    mnsName? : string;
     icon?    : string;
     onPress? : () => any;
     }
 
 export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Element
     {
-    const address : string = props.acnt.wm.address;
-    const mnsName : string = props.acnt.wm.mnsNmae;
+    const address : string = props.acnt ? props.acnt.wm.address : (props.address ? props.address : "");
+    const mnsName : string = props.acnt ? props.acnt.wm.mnsNmae : (props.mnsName ? props.mnsName : "");
 
     function renderMnsName() : JSX.Element | null
         {
         if (mnsName.length)
-            return (<Text style = {{ color: "#000000" }}>{ mnsName }</Text>);
+            return (<Text style={{ color: COLOR_BLACK }}>{ mnsName }</Text>);
         else
             return null;
         }
@@ -293,14 +305,14 @@ export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Elem
             <View style={ commonStyles.rowContainerV2 }>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <Text>{ props.title }</Text>
+                    <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
                     { renderMnsName() }
-                    <Text style = {{ color: "#000000" }}>{ address }</Text>
+                    <Text style={{ color: COLOR_BLACK }}>{ address }</Text>
                 </View>
                 <View style={{ width: 3 }}/>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
-                    <IconButton style={ commonStyles.icon } rippleColor="#FFC0FF" size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon={ props.icon } onPress={ props.onPress }/>
                 </View>
                 <View style={ commonStyles.flex1 }/>
             </View>
@@ -310,9 +322,9 @@ export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Elem
         {
         return (
             <>
-                <Text>{ props.title }</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
                 { renderMnsName() }
-                <Text style = {{ color: "#000000" }}>{ address }</Text>
+                <Text style={{ color: COLOR_BLACK }}>{ address }</Text>
             </>
             );
         }
@@ -375,18 +387,18 @@ export function SimpleTextInput(props : SimpleTextInputProps) : JSX.Element
         return  (
             <PaperTextInput
                 { ...(props as any) }
-                selectionColor="#600060"
-                underlineColor="#900090"
-                activeUnderlineColor="#600060"
+                selectionColor={ COLOR_DARK_PURPLE }
+                underlineColor={ COLOR_DARKISH_PURPLE }
+                activeUnderlineColor={ COLOR_DARK_PURPLE }
                 right={ <PaperTextInput.Icon name={ icon } onPress={ onPressIcon }/> }/>
             );
     else
         return  (
             <PaperTextInput
                 { ...(props as any) }
-                selectionColor="#600060"
-                underlineColor="#900090"
-                activeUnderlineColor="#600060"/>
+                selectionColor={ COLOR_DARK_PURPLE }
+                underlineColor={ COLOR_DARKISH_PURPLE }
+                activeUnderlineColor={ COLOR_DARK_PURPLE }/>
             );
     }
 
@@ -427,10 +439,11 @@ export function SimpleButton(props : SimpleButtonProps) : JSX.Element
     {
     const text = props.text;
     delete (props as any)["text"];
+    const testColor : string = props.disabled ? COLOR_MIDDLE_GREY : COLOR_BLACK;
     if (text)
         return (
-            <PaperButton { ...(props as any) } style={{ borderColor: "#900090", borderWidth: 1 }} mode="outlined" uppercase={ false } color="#600060">
-                <Text style={{ color: "#000000" }}>{ text }</Text>
+            <PaperButton { ...(props as any) } style={{ borderColor: COLOR_DARKISH_PURPLE, borderWidth: 1 }} mode="outlined" uppercase={ false } color={ COLOR_DARK_PURPLE }>
+                <Text style={{ color: testColor }}>{ text }</Text>
             </PaperButton>
             );
     else if (props.icon)
@@ -483,16 +496,16 @@ export function MenuOption(props : MenuOptionProps) : JSX.Element
             <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
                 <View style={{ width: 12 }}/>
                 <IconButton icon={ props.icon } disabled={ true } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
-                <Text style={{ color: "#808080", paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
             </View>
             );
     else
         return (
-            <TouchableRipple onPress={ props.onPress } rippleColor="#D080D0">
+            <TouchableRipple onPress={ props.onPress } rippleColor={ COLOR_DARK_PURPLE_RIPPLE }>
                 <View style={{ flexDirection: "row", margin: 0, borderWidth: 0, padding: 0 }}>
                     <View style={{ width: 12 }}/>
                     <IconButton icon={ props.icon } size={ 24 } style={{ margin: 0, padding: 0, borderWidth: 0 }}/>
-                    <Text style={{ color: "#000000", paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
+                    <Text style={{ color: COLOR_BLACK, paddingTop: 8, paddingBottom: 6, paddingLeft: 6, paddingRight: 18 }}>{ props.label }</Text>
                 </View>
             </TouchableRipple>
             );
@@ -556,7 +569,9 @@ export function formatStringSatoshi(satStr : string, decimals : number) : string
     let len = satStr.length - 1;
     while (satStr.charCodeAt(len) == CC_0) len--;
     if (satStr.charCodeAt(len) == CC_DOT) len++;
-    return negative ? `-` + satStr.substring(0, len + 1) : satStr.substring(0, len + 1);
+    satStr = negative ? `-` + satStr.substring(0, len + 1) : satStr.substring(0, len + 1);
+    if (decimals == 0 && satStr.charAt(satStr.length - 2) == ".") satStr = satStr.substring(0, satStr.length - 2);
+    return satStr;
     }
 
 export function noumberOfDecimals(floatStr : string) : number
