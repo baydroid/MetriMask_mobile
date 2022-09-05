@@ -568,7 +568,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                     <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="dots-horizontal" onPress={ openMenu }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="dots-horizontal" disabled={ tabCount == 0 } onPress={ openMenu }/>
                 </View>
             </View>
             );
@@ -585,7 +585,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                         <MenuOption disabled={ false         } icon="history"             label="History"         onPress={ showHistory        }/>
                         <MenuOption disabled={ tabCount == 0 } icon="home-switch-outline" label="Set Home"        onPress={ setHome            }/>
                         <MenuOption disabled={ tabCount == 0 } icon="home-outline"        label="Home"            onPress={ goToHome           }/>
-                        <MenuOption disabled={ tabCount == 0 } icon="cog-outline"         label="Settings"        onPress={ showSettings       }/>
+                        <MenuOption disabled={ false         } icon="cog-outline"         label="Settings"        onPress={ showSettings       }/>
                         <MenuOption disabled={ tabCount == 0 } icon="launch"              label="Other Browser"   onPress={ openInOtherBrowser }/>
                     </View>
                 </View>
@@ -616,9 +616,9 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                     </View>
                     <View style={{ flex: 1 }}/>
                     <View style={ commonStyles.titleContainingView }>
-                        <Text>Use the</Text>
+                        <Text style={{ color: COLOR_BLACK }}>Use the</Text>
                         <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
-                        <Text>button to open a new tab.</Text>
+                        <Text style={{ color: COLOR_BLACK }}>button to open a new tab.</Text>
                     </View>
                     <View style={{ flex: 1 }}/>
                     <BrowserBottom/>
