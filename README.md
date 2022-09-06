@@ -166,7 +166,13 @@ STEP 11)
 
 Edit android/app/src/main/AndroidManifest.xml.
 
-Add the line <uses-permission android:name="android.permission.VIBRATE" /> to the <manifest> tag.
+Add the line
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+to the
+
+    <manifest>
+tag.
 
 Add android:exported="true" and android:screenOrientation="portrait" to the properties of the <activity> tag.
 
