@@ -87,7 +87,7 @@ export enum RPC_METHOD
     CALL_CONTRACT    = 'callcontract'
     };
 
- export type ContractCallParams =
+export type ContractCallParams =
     {
     method : string;
     args   : any[];

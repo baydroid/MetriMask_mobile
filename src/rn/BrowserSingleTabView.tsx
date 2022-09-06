@@ -31,7 +31,6 @@ const browserTabStyles = StyleSheet.create
         flex: 1,
         height: 40,
         color: COLOR_BLACK,
-        backgroundColor: COLOR_WHITE,
         borderWidth: 0,
         paddingLeft: 8,
         paddingRight: 8,
