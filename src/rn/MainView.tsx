@@ -186,7 +186,7 @@ export default function MainView() : JSX.Element
         if (!logoutAlertOut)
             {
             logoutAlertOut = true;
-            Alert.alert("Lock Wallet", "Confirm locking the wallet",
+            Alert.alert("Lock Wallet", "Confirm locking the wallet?",
                 [
                 { text: "Cancel",      onPress: () : void => { logoutAlertOut = false;                     }, style: "cancel" },
                 { text: "Lock Wallet", onPress: () : void => { logoutAlertOut = false; MC.getMC().logout() }                  }
@@ -363,11 +363,17 @@ export default function MainView() : JSX.Element
                 <View style={ mainStyles.screenHolder }>
                     <BurgerlessTitleBar title="MetriMask"/>
                     <View style={ commonStyles.horizontalBar }/>
-                    <View style={{ height: 48 }}/>
-                    <BurgerlessTitleBar title="Loading ..."/>
-                    <View style={{ height: 48 }}/>
-                    <View style={ commonStyles.squeezed }>
-                        <ProgressBar style={{ height: 12 }} indeterminate color={ COLOR_DARK_PURPLE }/>
+                    <View style={{ ...commonStyles.columnContainerV2, height: "100%" }}>
+                        <View style={{ flex: 1 }}/>
+                        <View>
+                            <BurgerlessTitleBar title="Loading ..."/>
+                            <View style={{ height: 48 }}/>
+                            <View style={ commonStyles.squeezed }>
+                                <ProgressBar style={{ height: 12 }} indeterminate color={ COLOR_DARK_PURPLE }/>
+                            </View>
+                        </View>
+                        <View style={{ flex: 1 }}/>
+                        <View style={{ height: 144 }}/>
                     </View>
                 </View>
             </SafeAreaView>

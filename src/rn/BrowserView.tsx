@@ -4,7 +4,7 @@ import { IconButton, TouchableRipple } from 'react-native-paper';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import { MC } from "../mc";
-import BrowserAllTabsView, { BrowserAllTabsViewAPI, BrowserTabContextBase } from "./BrowserAllTabsView";
+import BrowserAllTabsView, { BrowserAllTabsViewAPI, browserSetInitialUrl, BrowserTabContextBase } from "./BrowserAllTabsView";
 import { BrowserTabContext } from "../BrowserTabContext";
 import { COLOR_BLACK, COLOR_DARK_PURPLE, COLOR_DARKISH_PURPLE, COLOR_PURPLE_RIPPLE, COLOR_WHITE, commonStyles, MenuOption, COLOR_LIGHT_PURPLE, COLOR_MIDDLE_GREY } from "./common";
 import { WebRefList, WebRef, WebRefStorageObj } from "../WebRefList";
@@ -262,10 +262,15 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
 
     function onNewTabPressed() : void
         {
+        openNewTab("");
+        }
+
+    function openNewTab(url : string) : void
+        {
         if (allTabsAPI)
             {
             allTabsAPI.setHiding(false);
-            allTabsAPI.activateTab(new BrowserTabContext(MC.getUniqueInt(), ""));
+            allTabsAPI.activateTab(new BrowserTabContext(MC.getUniqueInt(), url));
             setTabNonce(tabNonce + 1);
             }
         }
@@ -381,7 +386,10 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
 
     function goToHome() : void
         {
-        goToUrl(mc.storage.browserHomePage);
+        if (tabCount > 0)
+            goToUrl(mc.storage.browserHomePage);
+        else if (allTabsAPI)
+            allTabsAPI.activateSoloTab(new BrowserTabContext(MC.getUniqueInt(), mc.storage.browserHomePage));
         closeMenu();
         }
 
@@ -451,7 +459,10 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
 
         function openWebRef(wref : WebRef) : void
             {
-            goToUrl(wref.url);
+            if (tabCount > 0)
+                goToUrl(wref.url);
+            else if (allTabsAPI)
+                allTabsAPI.activateSoloTab(new BrowserTabContext(MC.getUniqueInt(), wref.url));
             resumeShowingBrowser();
             }
 
@@ -529,7 +540,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
 
     function BrowserBottom() : JSX.Element
         {
-        if (menuShowing)
+        if (menuShowing && tabCount > 0)
             return (
                 <View>
                     <WebButtonBar/>
@@ -568,7 +579,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                     <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="dots-horizontal" disabled={ tabCount == 0 } onPress={ openMenu }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="dots-horizontal" onPress={ openMenu }/>
                 </View>
             </View>
             );
@@ -584,7 +595,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                         <MenuOption disabled={ false         } icon="heart-outline"       label="View Favourites" onPress={ showFavourites     }/>
                         <MenuOption disabled={ false         } icon="history"             label="History"         onPress={ showHistory        }/>
                         <MenuOption disabled={ tabCount == 0 } icon="home-switch-outline" label="Set Home"        onPress={ setHome            }/>
-                        <MenuOption disabled={ tabCount == 0 } icon="home-outline"        label="Home"            onPress={ goToHome           }/>
+                        <MenuOption disabled={ false         } icon="home-outline"        label="Home"            onPress={ goToHome           }/>
                         <MenuOption disabled={ false         } icon="cog-outline"         label="Settings"        onPress={ showSettings       }/>
                         <MenuOption disabled={ tabCount == 0 } icon="launch"              label="Other Browser"   onPress={ openInOtherBrowser }/>
                     </View>
@@ -605,6 +616,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
         else
             return (
                 <View style={ commonStyles.containingView } { ...(Platform.OS === "android" ? { collapsable: false } : { }) }>
+                    { menuShowing ? renderMenu() : null }
                     <BrowserAllTabsView hide={ true } getApi={ getApi } onBurgerPressed={ onBurgerPressed } onNewCanGoState={ onNewCanGoState } onNewTabCount={ setTabCount } />
                     <View style={ commonStyles.topBar }>
                         <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } size={ 24 } icon="menu" onPress={ onBurgerPressed }/>

@@ -151,6 +151,7 @@ export type BrowserAllTabsViewAPI =
     isActiveTabId      : (x : number) => boolean;
     isActiveTab        : (x : BrowserTabContextBase | null | undefined) => boolean;
     activateTab        : (tabContext : BrowserTabContextBase) => void;
+    activateSoloTab    : (tabContext : BrowserTabContextBase) => void;
     closeTab           : (tabContext : BrowserTabContextBase) => void;
     closeTabById       : (tabId : number) => void;
     closeAllTabs       : () => void;
@@ -191,6 +192,7 @@ export default function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JS
         activeTab: activeTab,
         isActiveTab: isActiveTab,
         activateTab: activateTab,
+        activateSoloTab: activateSoloTab,
         closeTab: closeTab,
         closeTabById: closeTabById,
         closeAllTabs: closeAllTabs,
@@ -259,10 +261,27 @@ export default function BrowserAllTabsView(props : BrowserAllTabsViewProps) : JS
 
     function activateTab(tabContext : BrowserTabContextBase) : void
         {
+        actualActivateTab(tabContext, false);
+        }
+
+    function activateSoloTab(tabContext : BrowserTabContextBase) : void
+        {
+        actualActivateTab(tabContext, true);
+        }
+
+    function actualActivateTab(tabContext : BrowserTabContextBase, soloIfNew : boolean) : void
+        {
         if (isActiveTabId(tabContext.tabId)) return;
         let iTabToActivate = tabId2Index(tabContext.tabId);
         if (iTabToActivate >= 0)
             activateTabAtIndex(iTabToActivate);
+        else if (soloIfNew)
+            {
+            setTabArray([ tabContext ]);
+            setActiveTabIndex(0);
+            notifyCanGoState(false, false);
+            notifyTabCount(1);
+            }
         else
             {
             const newTabArray : BrowserTabContextBase[] = Array(tabArray.length + 1);

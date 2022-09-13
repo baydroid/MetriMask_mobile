@@ -139,7 +139,7 @@ export function LoginView(props : LoginViewProps) : JSX.Element
             }
         }
 
-    function GraphicOrInvalidPassword() : JSX.Element | null
+    function renderInvalidPassword() : JSX.Element | null
         {
         if (invalidPassword)
             {
@@ -152,27 +152,29 @@ export function LoginView(props : LoginViewProps) : JSX.Element
                 );
             }
         else
-            return (
-                    <View style={{ flexDirection: "row", width: "100%" }}>
-                        <View style={{ flex: 1 }}/>
-                        <Image source={ require("../img/metrimask.png") } resizeMode="center" style={{ margin: 0, padding: 0 }} />
-                        <View style={{ flex: 1 }}/>
-                    </View>
-                );
+            return null;
         }
 
     return (
         <View style = { commonStyles.containingView }>
             <TitleBar title="Unlock Wallet" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
+            <View style={{ flexDirection: "row", width: "100%" }}>
+                <View style={{ flex: 100 }}/>
+                <Image source={ require("../img/metrimask.png") } resizeMode="center" style={{ margin: 0, padding: 0 }} />
+                <View style={{ flex: 100 }}/>
+            </View>
             <View style={ commonStyles.squeezed }>
-                <View style={{ height: 24 }}/>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>
                 <SimpleButton text="Unlock Wallet" onPress = { () => { login(); } }/>
-                <GraphicOrInvalidPassword/>
+                { renderInvalidPassword() }
+            </View>
+            <View style={{ flex: 180 }}/>
+            <View style={ commonStyles.squeezed }>
                 <SimpleButton text="Reset Metrimask" onPress = { () => { resetApp(); } }/>
             </View>
+            <View style={{ height: 24 }}/>
         </View>
         );
     }

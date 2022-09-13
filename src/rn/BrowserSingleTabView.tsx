@@ -109,7 +109,7 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
 
     function activateMenu(renderMenu : () => JSX.Element) : void
         {
-        if (!menu && isVisible()) setMenu(() : () => JSX.Element => renderMenu);
+        if (!menu && isVisible()) setMenu(() : () => JSX.Element => renderMenu); // Set state methods always execute any function argument and set the state to what the function returns.
         }
 
     function dismissMenu() : void
