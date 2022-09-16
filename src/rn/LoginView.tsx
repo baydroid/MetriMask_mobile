@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Image } from "react-native";
+import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Image, useWindowDimensions } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -10,6 +10,10 @@ import { commonStyles, InvalidMessage, SimpleButton, SimpleTextInput, TitleBar }
 import { Insight } from "metrixjs-wallet";
 
 
+
+const IMG_SOURCE : string = "../img/metrimask_big.png";
+const IMG_HEIGHT : number = 494;
+const IMG_WIDTH  : number = 576;
 
 type LoginViewProps =
     {
@@ -31,6 +35,8 @@ export function LoginView(props : LoginViewProps) : JSX.Element
     const plainPasswordRef = useRef<TextInput>(null);
 
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
+
+    const layout = useWindowDimensions();
 
     if (props.loginFailure == invalidPasswordNonce && !invalidPassword) setInvalidPassword(true);
     
@@ -155,22 +161,34 @@ export function LoginView(props : LoginViewProps) : JSX.Element
             return null;
         }
 
+    function ImageSection() : JSX.Element
+        {
+        const WIDTH = layout.width/2;
+        const HEIGHT = (IMG_HEIGHT*WIDTH)/IMG_WIDTH;
+
+        return (
+            <View style={{ flexDirection: "row", width: "100%" }}>
+                <View style={{ flex: 100 }}/>
+                <Image source={ require(IMG_SOURCE) } resizeMode="stretch" style={{ width: WIDTH, height: HEIGHT, margin: 0, padding: 0 }} />
+                <View style={{ flex: 100 }}/>
+            </View>
+            );
+        }
+
     return (
         <View style = { commonStyles.containingView }>
             <TitleBar title="Unlock Wallet" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
-            <View style={{ flexDirection: "row", width: "100%" }}>
-                <View style={{ flex: 100 }}/>
-                <Image source={ require("../img/metrimask.png") } resizeMode="center" style={{ margin: 0, padding: 0 }} />
-                <View style={{ flex: 100 }}/>
-            </View>
+            <View style={{ flex: 100 }}/>
+            <ImageSection/>
+            <View style={{ flex: 100 }}/>
             <View style={ commonStyles.squeezed }>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>
                 <SimpleButton text="Unlock Wallet" onPress = { () => { login(); } }/>
                 { renderInvalidPassword() }
             </View>
-            <View style={{ flex: 180 }}/>
+            <View style={{ flex: 400 }}/>
             <View style={ commonStyles.squeezed }>
                 <SimpleButton text="Reset Metrimask" onPress = { () => { resetApp(); } }/>
             </View>

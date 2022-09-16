@@ -43,7 +43,7 @@ const mainStyles = StyleSheet.create
 
 
 
-export const DEFAULT_INACTIVITY_TIMEOUT_MILLIS = 60*60*1000; // TODO put this back to 5 mins for production versions.
+export const DEFAULT_INACTIVITY_TIMEOUT_MILLIS = 15*60*1000;
 
 const TIMEOUT_HANDLER : TimeoutHandler<any> = // <any> instead of <BGTimerInfo> for compatability with UserInactivity.timeoutHandler which is a TimeoutHandler<unknown>
     {

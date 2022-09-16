@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Text, View, TextInput,} from "react-native";
+import { Text, View, TextInput, Keyboard } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -46,6 +46,12 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
     const mc = MC.getMC();
     const am = mc.storage.accountManager;
 
+    function onBurgerPressed() : void
+        {
+        clearErrorCondition();
+        props.onBurgerPressed();
+        }
+
     function createNew() : void
         {
         if (validateInput())
@@ -87,6 +93,8 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
 
     function validateInput() : boolean
         {
+        setNetworkDDOpen(false);
+        clearErrorCondition();
         return validateName() && (am.isLoggedIn ||  validatePassword());
         }
 
@@ -94,12 +102,12 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
         {
         if (!name.length)
             {
-            setErrorMsg(NAME_EMPTY_ERROR);
+            setErrorCondition(NAME_EMPTY_ERROR);
             return false;
             }
         else if (am.hasAccount(name))
             {
-            setErrorMsg(NAME_IN_USE_ERROR);
+            setErrorCondition(NAME_IN_USE_ERROR);
             return false;
             }
         return true;
@@ -109,30 +117,28 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
         {
         if (password.length < 8)
             {
-            setErrorMsg(PASSWORD_TOO_SHORT_ERROR);
+            setErrorCondition(PASSWORD_TOO_SHORT_ERROR);
             return false;
             }
         else if (useSecureInput && password != confirmPassword)
             {
-            setErrorMsg(CONFIRM_PASSWORD_ERROR);
+            setErrorCondition(CONFIRM_PASSWORD_ERROR);
             return false;
             }
         return true;
         }
 
-    function renderErrorMessage() : JSX.Element | null
+    function setErrorCondition(errMsg : string) : void
         {
-        if (errorMsg.length)
-            {
-            return (
-                <>
-                    <View style={{ height: 24 }}/>
-                    <InvalidMessage text={ errorMsg } />
-                </>
-                );
-            }
-        else
-            return null;
+        setNetworkDDOpen(false);
+        Keyboard.dismiss();
+        setErrorMsg(errMsg);
+        }
+
+    function clearErrorCondition() : void
+        {
+        setNetworkDDOpen(false);
+        setErrorMsg("");
         }
 
     function renderPasswordInput() : JSX.Element | null
@@ -158,6 +164,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                         label="Set Password"
                         value={ password }
                         onChangeText={ (txt : string) : void => setPassword(txt) }
+                        onFocus={ clearErrorCondition }
                         rnRef={ securePasswordRef }
                         secureTextEntry
                         icon="eye"
@@ -167,6 +174,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                         label="Confirm Password"
                         value={ confirmPassword }
                         onChangeText={ (txt : string) : void => setConfirmPassword(txt) }
+                        onFocus={ clearErrorCondition }
                         rnRef={ confirmPasswordRef }
                         secureTextEntry
                         icon="eye"
@@ -183,6 +191,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                         label="Set Password"
                         value={ password }
                         onChangeText={ (txt : string) : void => setPassword(txt) }
+                        onFocus={ clearErrorCondition }
                         rnRef={ plainPasswordRef }
                         icon="eye-off"
                         onPressIcon={ () => setSecure(true) }/>
@@ -191,9 +200,41 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
             }
         }
 
+    function ActionButtons() : JSX.Element
+        {
+        return (
+            <>
+                <SimpleButton text="Create New Account" onPress = { createNew }/>
+                <View style={{ height: 24 }}/>
+                <SimpleButton text="Import Mnemonic" onPress = { importByMnemonic }/>
+                <View style={{ height: 24 }}/>
+                <SimpleButton text="Import WIF Private Key" onPress = { importByWIF }/>
+            </>
+            );
+        }
+
+    function BottomOfScreen() : JSX.Element
+        {
+        if (errorMsg.length)
+            {
+            if (am.isLoggedIn)
+                return (
+                    <>
+                        <ActionButtons/>
+                        <View style={{ height: 24 }}/>
+                        <InvalidMessage text={ errorMsg }/>
+                    </>
+                    );
+            else
+                return (<InvalidMessage text={ errorMsg }/>);
+            }
+        else
+            return (<ActionButtons/>);
+        }
+
     return (
         <View style = { commonStyles.containingView }>
-            <TitleBar title="Add Account" onBurgerPressed={ props.onBurgerPressed }/>
+            <TitleBar title="Add Account" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 24 }}/>
             <View style={ commonStyles.squeezed }>
@@ -201,6 +242,9 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                 <DropDownPicker
                     dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
                     style={{ borderColor: COLOR_DARKISH_PURPLE }}
+                    onOpen={ () : void => setErrorMsg("") }
+                    onClose={ () : void => setErrorMsg("") }
+                    onSelectItem={ () : void => setErrorMsg("") }
                     items = { networkDDItems }
                     open = { networkDDOpen }
                     value = { networkDDValue }
@@ -208,15 +252,10 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                     setValue = { setNetworkDDValue }
                     setItems = { setNetworkDDItems }/>
                 <View style={{ height: 24 }}/>
-                <SimpleTextInput label = "Account Name" value = { name } onChangeText = { (txt : string) : void => { setName(txt) } }/>
+                <SimpleTextInput label = "Account Name" value = { name } onFocus={ clearErrorCondition } onChangeText = { (txt : string) : void => { setName(txt) } }/>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>
-                <SimpleButton text="Create New Account" onPress = { createNew }/>
-                <View style={{ height: 24 }}/>
-                <SimpleButton text="Import Mnemonic" onPress = { importByMnemonic }/>
-                <View style={{ height: 24 }}/>
-                <SimpleButton text="Import WIF Private Key" onPress = { importByWIF }/>
-                { renderErrorMessage() }
+                <BottomOfScreen/>
             </View>
         </View>
         );

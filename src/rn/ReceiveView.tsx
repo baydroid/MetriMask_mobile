@@ -26,8 +26,9 @@ export function ReceiveView(props : ReceiveViewProps) : JSX.Element
 
     function qrSize() : number
         {
-        let qrSize = layout.width < 396 ? layout.width - 96 : 300;
-        if (qrSize > layout.height - 550) qrSize = layout.height - 550;
+        let qrSize = layout.width/2;
+        if (qrSize > layout.width - 192) qrSize = layout.width - 192;
+        if (qrSize > 336) qrSize = 336;
         return qrSize;
         }
 
@@ -44,13 +45,13 @@ export function ReceiveView(props : ReceiveViewProps) : JSX.Element
                 <AddressQuasiDoublet title="Account Address:" acnt={ am.current }/>
                 <View style = {{ height: 24 }} />
                 <SimpleButton onPress={ () : void => Clipboard.setString(am.current.wm.address) } text="Copy to Clipboard" icon="content-copy"/>
-                <View style={{ height: 48 }} />
+                <View style={{ height: 24 }} />
                 <View style={ commonStyles.rowContainerV2 }>
                     <View style={{ flex: 1 }}/>
                     <QRCode value={ am.current.wm.address } size={ qrSize() }/>
                     <View style={{ flex: 1 }}/>
                 </View>
-                <View style={{ height: 48 }} />
+                <View style={{ height: 24 }} />
                 <SimpleButton onPress={ () : void => walletNavigation.navigate(WALLET_SCREENS.ACCOUNT_HOME) } text="Account Home"/>
             </View>
         </View>
