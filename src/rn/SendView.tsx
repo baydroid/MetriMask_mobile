@@ -404,29 +404,14 @@ export function SendView(props : SendViewProps) : JSX.Element
         if (errorMessage.length) setErrorMessage("");
         }
 
-    function renderErrorMessage() : JSX.Element | null
-        {
-        if (errorMessage.length)
-            {
-            return (
-                <>
-                    <View style={{ height: 24 }}/>
-                    <InvalidMessage text={ errorMessage } />
-                </>
-                );
-            }
-        else
-            return null;
-        }
-
-    function renderFeeOrGas() : JSX.Element
+    function FeeOrGas() : JSX.Element
         {
         if (tokenDDValue != "")
             {
             return (
                 <SimpleTextInputPair
-                    left={{ label: "Gas Limit:", value: gasLimitStr, onChangeText: onChangeGasLimit, keyboardType: "numeric" }}
-                    right={{ label: "Gas Price (Sat):", value: gasPriceStr, onChangeText: onChangeGasPrice, keyboardType: "numeric" }}/>
+                    left={{ label: "Gas Limit:", value: gasLimitStr, onChangeText: onChangeGasLimit, keyboardType: "numeric", onFocus: clearError }}
+                    right={{ label: "Gas Price (Sat):", value: gasPriceStr, onChangeText: onChangeGasPrice, keyboardType: "numeric", onFocus: clearError }}/>
                 );
             }
         else
@@ -444,11 +429,21 @@ export function SendView(props : SendViewProps) : JSX.Element
                         setValue={ setFeerateDDValue }
                         setItems={ setFeerateDDItems }
                         onOpen={ onOpenFeerateDD }
+                        onClose={ clearError }
+                        onSelectItem={ clearError }
                         zIndex={ 10 }
                         zIndexInverse={ 20 }/>
                 </>
                 );
             }
+        }
+
+    function BottomOfScreen() : JSX.Element
+        {
+        if (errorMessage.length)
+            return (<InvalidMessage text={ errorMessage }/>);
+        else
+            return (<SimpleButtonPair left={{ text: "Cancel", onPress: onCancel }} right={{ text: "Send", onPress: onSend }}/>);
         }
 
     return (
@@ -475,17 +470,18 @@ export function SendView(props : SendViewProps) : JSX.Element
                     setValue={ setTokenDDValue }
                     setItems={ setTokenDDItems }
                     onOpen={ onOpenTokenDD }
+                    onClose={ clearError }
+                    onSelectItem={ clearError }
                     zIndex={ 20 }
                     zIndexInverse={ 10 }/>
                 <View style={{ height: 24 }} />
-                <SimpleTextInput label="Amount:" keyboardType="numeric" value={ amountStr } onChangeText={ onChangeAmount }/>
+                <SimpleTextInput label="Amount:" keyboardType="numeric" value={ amountStr } onChangeText={ onChangeAmount } onFocus={ clearError }/>
                 <View style={{ height: 24 }} />
-                <SimpleTextInput label="To Address or MNS Name:" value={ toAddr } onChangeText={ onChangeToAddr } onEndEditing={ onEndEditingToAddr } icon="qrcode" onPressIcon={ onQRScanPressed }/>
+                <SimpleTextInput label="To Address or MNS Name:" value={ toAddr } onChangeText={ onChangeToAddr } onEndEditing={ onEndEditingToAddr } icon="qrcode" onPressIcon={ onQRScanPressed } onFocus={ clearError }/>
                 <View style={{ height: 24 }} />
-                { renderFeeOrGas() }
+                <FeeOrGas/>
                 <View style={{ height: 24 }} />
-                <SimpleButtonPair left={{ text: "Cancel", onPress: onCancel }} right={{ text: "Send", onPress: onSend }}/>
-                { renderErrorMessage() }
+                <BottomOfScreen/>
             </View>
         </View>
         );
