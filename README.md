@@ -70,6 +70,8 @@ For some reason npx react-native info couldn't find Android Studio, or the SDK, 
 
 ### FIRST STEPS FOR BOTH iOS AND ANDROID
 
+#### STEP 1)
+
 Follow the instructions at the link below to setup the react-native development environment.
 
     https://reactnative.dev/docs/environment-setup
