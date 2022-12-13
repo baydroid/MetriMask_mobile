@@ -178,7 +178,7 @@ Add the Ios icons by copying the contents of Images.xcassets to ios/MetriMask_mo
 
 #### STEP 12i)
 
-Edit ios/MetriMask_mobile/Info.plist, add the following 2 key valuw pairs to it in the <dict></dict> section.
+Edit ios/MetriMask_mobile/Info.plist, add the following 2 key value pairs to it in the <dict></dict> section.
 
     <key>NSCameraUsageDescription</key>
     <string>MetriMask uses the camera to scan QR codes.</string>
