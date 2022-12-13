@@ -1,4 +1,4 @@
-import "../../shim.js";
+import "../../shimWrapper.js";
 
 import { BigInteger } from "big-integer";
 
@@ -212,7 +212,7 @@ export function TitleBar(props : TitleBarProps) : JSX.Element
             <View style={ commonStyles.titleContainingView }>
                 <Text style={ commonStyles.titleText }>{ props.title }</Text>
             </View>
-            <IconButton style={ commonStyles.icon } size={ 24 } color={ COLOR_WHITE } icon="menu"/>
+            <IconButton style={ commonStyles.icon } iconColor={ COLOR_WHITE } size={ 24 } icon="menu"/>
         </View>
         );
     }
@@ -390,7 +390,7 @@ export function SimpleTextInput(props : SimpleTextInputProps) : JSX.Element
                 selectionColor={ COLOR_DARK_PURPLE }
                 underlineColor={ COLOR_DARKISH_PURPLE }
                 activeUnderlineColor={ COLOR_DARK_PURPLE }
-                right={ <PaperTextInput.Icon name={ icon } onPress={ onPressIcon }/> }/>
+                right={ (<PaperTextInput.Icon icon={ icon } onPress={ onPressIcon }/>) }/>
             );
     else
         return  (

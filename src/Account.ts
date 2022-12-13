@@ -1,4 +1,4 @@
-import '../shim.js';
+import '../shimWrapper.js';
 
 import { MC } from "./mc";
 import { nim } from "./NetInfo";

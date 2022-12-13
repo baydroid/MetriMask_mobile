@@ -1,4 +1,4 @@
-import '../shim.js';
+import '../shimWrapper.js';
 
 import React from "react";
 import { BackHandler } from "react-native";
@@ -6,9 +6,9 @@ import toBigInteger from "big-integer";
 import createKeccakHash from "keccak";
 import { setJSExceptionHandler } from 'react-native-exception-handler';
 import { randomBytes } from 'react-native-randombytes';
+import { validate } from "mrx-address-validation";
 //import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { validate } from "./modified_node_modules/mrx-address-validation";
 
 import { BrowserAllTabsViewAPI, browserSetInitialUrl, BrowserTabContextBase } from "./rn/BrowserAllTabsView";
 import { BrowserTabContext } from "./BrowserTabContext";
@@ -174,14 +174,14 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
             setTimeout(() : void => onSendingPermittedDecision(false, "0", 0, 0), 0);
         }
 
-    public showWalletWorking(workFunction : () => WorkFunctionResult) : void
+    public showWalletWorking(workFunction : () => WorkFunctionResult, whatWorksGoingOn? : string) : void
         {
-        if (this.mainViewAPI) this.mainViewAPI.showWalletWorking(workFunction);
+        if (this.mainViewAPI) this.mainViewAPI.showWalletWorking(workFunction, whatWorksGoingOn);
         }
 
-    public showWalletWorkingAsync(asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any) : void
+    public showWalletWorkingAsync(asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any, whatWorksGoingOn? : string) : void
         {
-        if (this.mainViewAPI) this.mainViewAPI.showWalletWorkingAsync(asyncWorkFunction);
+        if (this.mainViewAPI) this.mainViewAPI.showWalletWorkingAsync(asyncWorkFunction, whatWorksGoingOn);
         }
     
     public restartUserInactivityTimer() : void

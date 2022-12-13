@@ -26,9 +26,10 @@ export type AddTokenViewSerializableProps =
 
 export type AddTokenViewProps = AddTokenViewSerializableProps &
     {
-    onBurgerPressed  : () => any;
-    qrScanAddress    : (target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) => any;
-    showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
+    onBurgerPressed    : () => any;
+    qrScanAddress      : (target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) => any;
+    qrShouldShowButton : () => boolean;
+    showWorkingAsync   : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
     };
 
 let qrScannedAddress : string = "";
@@ -37,6 +38,7 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
     {
     const [ address, setAddress ] = useState<string>(props.address ? props.address : "");
     const [ errMsg, setErrMsg ] = useState<string>(props.errMsg ? props.errMsg : "");
+    const [ showQRButton, setShowQRButton ] = useState<boolean>(props.qrShouldShowButton());
     const isShowing = useRef<boolean>(false);
 
     useEffect(() : (() => void) =>
@@ -48,6 +50,13 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
         {
         setAddress(qrScannedAddress);
         qrScannedAddress = "";
+        }
+    configureShowQRButton();
+
+    function configureShowQRButton() : void
+        {
+        const shouldShowIt : boolean = props.qrShouldShowButton();
+        if (shouldShowIt != showQRButton) setShowQRButton(shouldShowIt);
         }
 
     function addToken() : void
@@ -133,13 +142,21 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
             return null;
         }
 
+    function TokenAddressTextInput() : JSX.Element
+        {
+        if (showQRButton)
+            return (<SimpleTextInput label="Token Address or MNS name:" value={ address } onChangeText={ (txt : string) : void => setAddress(txt) } icon="qrcode" onPressIcon={ onQRScanPressed }/>);
+        else
+            return (<SimpleTextInput label="Token Address or MNS name:" value={ address } onChangeText={ (txt : string) : void => setAddress(txt) }/>);
+        }
+
     return (
         <View style={ commonStyles.containingView }>
             <TitleBar title="Find MRC20 Token" onBurgerPressed={ props.onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style={{ height: 24 }} />
-                <SimpleTextInput label="Token Address or MNS name:" value={ address } onChangeText={ (txt : string) : void => setAddress(txt) } icon="qrcode" onPressIcon={ onQRScanPressed }/>
+                <TokenAddressTextInput/>
                 <View style={{ height: 24 }} />
                 <SimpleButton text="Find Token" onPress={ addToken }/>
                 { renderInvalidAddress() }

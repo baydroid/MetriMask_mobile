@@ -1,4 +1,4 @@
-import "../../shim.js";
+import "../../shimWrapper.js";
 
 import React, { useState, useEffect } from "react";
 import { NativeSyntheticEvent, Text, TextInputEndEditingEventData, View } from "react-native";
@@ -52,9 +52,10 @@ export type SendViewSerializableProps =
 
 export type SendViewProps = SendViewSerializableProps &
     {
-    onBurgerPressed  : () => any;
-    qrScanAddress    : (target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) => any;
-    showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any) => any;
+    onBurgerPressed    : () => any;
+    qrScanAddress      : (target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) => any;
+    qrShouldShowButton : () => boolean;
+    showWorkingAsync   : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any) => any;
     };
 
 let loadCount : number = 1;
@@ -88,6 +89,7 @@ export function SendView(props : SendViewProps) : JSX.Element
     const [ gasLimitStr, setGasLimitStr ] = useState<string>(props.gasLimitStr ? props.gasLimitStr : DEFAULT_GAS_LIMIT.toString());
     const [ tacc, setTacc ] = useState<number>(am.current.tkm.tokenArrayChangeCount);
     const [ errorMessage, setErrorMessage ] = useState<string>("");
+    const [ showQRButton, setShowQRButton ] = useState<boolean>(props.qrShouldShowButton());
 
     if (tacc != am.current.tkm.tokenArrayChangeCount)
         {
@@ -105,6 +107,7 @@ export function SendView(props : SendViewProps) : JSX.Element
     if (lastTokenDDValue != tokenDDValue) tokenDDValueRecentlyUpdated = true;
     lastTokenDDValue = tokenDDValue;
     updateBalanceStr();
+    configureShowQRButton();
 
     useEffect(() : (() => void) =>
         {
@@ -150,6 +153,12 @@ export function SendView(props : SendViewProps) : JSX.Element
         const items : ItemTypePlus[] = [ { label: "MRX", value: "", decimals: MRX_DECIMALS } ];
         for (const tk of am.current.tkm.tokenArray) items.push({ label: tk.name, value: tk.address, decimals: tk.decimals });
         return items.sort((a: ItemTypePlus, b: ItemTypePlus) : number => a.label == "MRX" ? -1 : (b.label == "MRX" ? 1 : a.label!.localeCompare(b.label!)));
+        }
+
+    function configureShowQRButton() : void
+        {
+        const shouldShowIt : boolean = props.qrShouldShowButton();
+        if (shouldShowIt != showQRButton) setShowQRButton(shouldShowIt);
         }
 
     function updateBalanceStr() : void
@@ -438,6 +447,14 @@ export function SendView(props : SendViewProps) : JSX.Element
             }
         }
 
+    function ToAddressTextInput() : JSX.Element
+        {
+        if (showQRButton)
+            return (<SimpleTextInput label="To Address or MNS Name:" value={ toAddr } onChangeText={ onChangeToAddr } onEndEditing={ onEndEditingToAddr } onFocus={ clearError } icon="qrcode" onPressIcon={ onQRScanPressed }/>);
+        else
+            return (<SimpleTextInput label="To Address or MNS Name:" value={ toAddr } onChangeText={ onChangeToAddr } onEndEditing={ onEndEditingToAddr } onFocus={ clearError }/>);
+        }
+
     function BottomOfScreen() : JSX.Element
         {
         if (errorMessage.length)
@@ -477,7 +494,7 @@ export function SendView(props : SendViewProps) : JSX.Element
                 <View style={{ height: 24 }} />
                 <SimpleTextInput label="Amount:" keyboardType="numeric" value={ amountStr } onChangeText={ onChangeAmount } onFocus={ clearError }/>
                 <View style={{ height: 24 }} />
-                <SimpleTextInput label="To Address or MNS Name:" value={ toAddr } onChangeText={ onChangeToAddr } onEndEditing={ onEndEditingToAddr } icon="qrcode" onPressIcon={ onQRScanPressed } onFocus={ clearError }/>
+                <ToAddressTextInput/>
                 <View style={{ height: 24 }} />
                 <FeeOrGas/>
                 <View style={{ height: 24 }} />

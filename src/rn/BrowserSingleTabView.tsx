@@ -4,7 +4,7 @@ import { WebView, WebViewMessageEvent } from "react-native-webview";
 import { WebViewNavigation, WebViewNavigationEvent, WebViewErrorEvent } from "react-native-webview/lib/WebViewTypes";
 import { IconButton, ProgressBar } from 'react-native-paper';
 
-import { COLOR_BLACK, COLOR_DARK_PURPLE, COLOR_PURPLE_RIPPLE, COLOR_WHITE, commonStyles } from "./common";
+import { COLOR_BLACK, COLOR_DARK_PURPLE, COLOR_PURPLE_RIPPLE, commonStyles } from "./common";
 import { MC } from "../mc";
 import { parseBrowserUrl } from "../parseBrowserUrl";
 

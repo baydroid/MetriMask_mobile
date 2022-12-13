@@ -1,4 +1,4 @@
-import '../shim.js';
+import '../shimWrapper.js';
 
 import toBigInteger, { BigInteger } from "big-integer";
 import { Insight } from "metrixjs-wallet";

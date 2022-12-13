@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform, PlatformOSType } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {check, request, Permission, PERMISSIONS, RESULTS} from 'react-native-permissions';
 
 import { CreateAccountView } from "./CreateAccountView";
 import { ImportAccountView } from "./ImportAccountView";
@@ -23,6 +24,7 @@ import { MC } from "../mc";
 import { WorkFunctionResult } from "./MainView";
 import { ResetAppView } from "./ResetAppView";
 import { ConfirmSendView } from "./ConfirmSendView";
+import { Alert } from "react-native";
 
 
 
@@ -37,6 +39,11 @@ const walletStyles = StyleSheet.create
     });
 
 
+
+const ERROR_NO_QRSCANNER   = "QR code scanning is not available on this device.";
+const ERROR_CAMERA_REFUSED = "Permission to use the camera has been denied.";
+
+type PermissionStatus = "unavailable" | "denied" | "limited" | "granted" | "blocked";
 
 export enum WALLET_SCREENS
     {
@@ -71,7 +78,32 @@ export type WalletViewProps =
     getApi?         : (api : WalletViewAPI) => any;
     };
 
+function initCameraPermissionStatus() : PermissionStatus
+    {
+    const cameraPermission : Permission | null = getCameraPermission();
+    if (cameraPermission)
+        {
+        check(cameraPermission)
+            .then((ps : PermissionStatus) : void => { cameraPermissionStatus = ps; })
+            .catch((e : Error) : void => { MC.raiseError(e, "WalletView initCameraPermissionStatus() Error checking for camera permission."); });
+        return RESULTS.DENIED;
+        }
+    else
+        return RESULTS.UNAVAILABLE;
+    }
+
+function getCameraPermission() : Permission | null
+    {
+    switch (Platform.OS)
+        {
+        case "android": return PERMISSIONS.ANDROID.CAMERA;
+        case "ios":     return PERMISSIONS.IOS.CAMERA;
+        default:        MC.raiseError(`Unknown platform ${ Platform.OS }`, "WalletView getCameraPermission()"); return PERMISSIONS.ANDROID.CAMERA;
+        }
+    }
+
 const WalletNavigator = createStackNavigator();
+let cameraPermissionStatus : PermissionStatus = initCameraPermissionStatus();
 let onAddressScannedCopy : ((address : string) => any) | null = null;
 let returnScreenCopy : WALLET_SCREENS = WALLET_SCREENS.SEND;
 
@@ -89,22 +121,80 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         props.onBurgerPressed();
         }
 
-    function showWorkingAsync(asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any) : void
+    function showWorkingAsync(asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any, whatWorksGoingOn? : string) : void
         {
-        MC.getMC().showWalletWorkingAsync(asyncWorkFunction);
+        MC.getMC().showWalletWorkingAsync(asyncWorkFunction, whatWorksGoingOn);
         }
 
-    function showWorking(workFunction : () => WorkFunctionResult) : void
+    function showWorking(workFunction : () => WorkFunctionResult, whatWorksGoingOn? : string) : void
         {
-        MC.getMC().showWalletWorking(workFunction);
+        MC.getMC().showWalletWorking(workFunction, whatWorksGoingOn);
+        }
+
+    function qrShouldShowButton() : boolean
+        {
+        return cameraPermissionStatus != RESULTS.BLOCKED && cameraPermissionStatus != RESULTS.UNAVAILABLE;
         }
 
     function qrScanAddress(target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) : void
         {
-        if (onAddressScannedCopy !== null) MC.raiseError("2nd QR scan requested before 1st one done.", "WalletView qrScanAddress()");
-        onAddressScannedCopy = onAddressScanned;
-        returnScreenCopy = returnScreen;
-        walletNavigation.navigate(WALLET_SCREENS.QR_SCANNER, { target });
+        const cameraPermission : Permission | null = getCameraPermission();
+        if (cameraPermission)
+            {
+            check(cameraPermission)
+                .then((ps : PermissionStatus) : void => { qrProcessPermissionCheck(ps, target, returnScreen, onAddressScanned); })
+                .catch((e : Error) : void => { MC.raiseError(e, "WalletView.qrScanAddress() Error checking for camera permission."); });
+            }
+        else
+            Alert.alert(ERROR_NO_QRSCANNER);
+        }
+
+    function qrProcessPermissionCheck(ps : PermissionStatus, target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) : void
+        {
+        cameraPermissionStatus = ps;
+        switch (ps)
+            {
+            case RESULTS.UNAVAILABLE:
+                Alert.alert(ERROR_NO_QRSCANNER);
+                break;
+            case RESULTS.DENIED:
+                const cameraPermission : Permission | null = getCameraPermission();
+                if (cameraPermission)
+                    {
+                    request(cameraPermission)
+                        .then((ps : PermissionStatus) : void => { qrProcessPermissionRequest(ps, target, returnScreen, onAddressScanned); })
+                        .catch((e : Error) : void => { MC.raiseError(e, "Error requesting camera permission."); });
+                    }
+                else
+                    Alert.alert(ERROR_NO_QRSCANNER);
+                break;
+            case RESULTS.LIMITED: case RESULTS.GRANTED:
+                qrProcessPermissionRequest(ps, target, returnScreen, onAddressScanned);
+                break;
+            case RESULTS.BLOCKED:
+                Alert.alert(ERROR_CAMERA_REFUSED);
+                break;
+            }
+        }
+
+    function qrProcessPermissionRequest(ps : PermissionStatus, target : QR_SCANNER_TARGETS, returnScreen : WALLET_SCREENS, onAddressScanned : (address : string) => any) : void
+        {
+        cameraPermissionStatus = ps;
+        switch (ps)
+            {
+            case RESULTS.UNAVAILABLE:
+                Alert.alert(ERROR_NO_QRSCANNER);
+                break;
+            case RESULTS.LIMITED: case RESULTS.GRANTED:
+                if (onAddressScannedCopy !== null) MC.raiseError("2nd QR scan requested before 1st one done.", "WalletView processPermissionRequest()");
+                onAddressScannedCopy = onAddressScanned;
+                returnScreenCopy = returnScreen;
+                walletNavigation.navigate(WALLET_SCREENS.QR_SCANNER, { target });
+                break;
+            case RESULTS.DENIED: case RESULTS.BLOCKED:
+                Alert.alert(ERROR_CAMERA_REFUSED);
+                break;
+            }
         }
 
     function CreateAccountScreen() : JSX.Element
@@ -179,7 +269,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
-                    <AddTokenView { ...normalizeProps(props) } qrScanAddress={ qrScanAddress } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
+                    <AddTokenView { ...normalizeProps(props) } qrScanAddress={ qrScanAddress } qrShouldShowButton={ qrShouldShowButton } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
                 </View>
             </SafeAreaView>
             );
@@ -231,7 +321,7 @@ export default function WalletView(props : WalletViewProps) : JSX.Element
         return (
             <SafeAreaView>
                 <View style={ walletStyles.screenHolder }>
-                    <SendView { ...normalizeProps(props) } qrScanAddress={ qrScanAddress } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
+                    <SendView { ...normalizeProps(props) } qrScanAddress={ qrScanAddress } qrShouldShowButton={ qrShouldShowButton } showWorkingAsync={ showWorkingAsync } onBurgerPressed={ onBurgerPressed }/>
                 </View>
             </SafeAreaView>
             );

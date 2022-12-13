@@ -1,4 +1,4 @@
-import "../../shim.js";
+import "../../shimWrapper.js";
 
 import React, { useEffect } from "react";
 import { StyleSheet, View, Text, Linking, Alert } from "react-native";
@@ -8,13 +8,12 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { ProgressBar } from "react-native-paper";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { TimeoutHandler } from "usetimeout-react-hook";
-
-import UserInactivity, { UserInactivityAPI } from "../modified_node_modules/react-native-user-inactivity";
+import UserInactivity, { UserInactivityAPI } from "react-native-user-inactivity";
 
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import BrowserView from "./BrowserView";
 import WalletView, { WALLET_SCREENS, WalletViewAPI } from "./WalletView";
-import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, SimpleButton, formatSatoshi, BurgerlessTitleBar, MenuOption, COLOR_WHITE, COLOR_BLACK, COLOR_GREEN_WASH, COLOR_DARK_PURPLE } from "./common";
+import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, formatSatoshi, BurgerlessTitleBar, MenuOption, COLOR_WHITE, COLOR_BLACK, COLOR_GREEN_WASH, COLOR_DARK_PURPLE } from "./common";
 import { PermissionToSignView, PermissionToSignViewProps } from "./PermissionToSignView";
 import { PermissionToSendView, PermissionToSendViewProps } from "./PermissionToSendView";
 import { ContractCallParams } from "../WalletManager";
@@ -31,13 +30,6 @@ const mainStyles = StyleSheet.create
         height: "100%",
         width: "100%",
         backgroundColor: COLOR_WHITE,
-        },
-    topBar:
-        {
-        height: 36,
-        backgroundColor: COLOR_WHITE,
-        flexDirection: "row",
-        alignItems: "center"
         },
     });
 
@@ -90,8 +82,8 @@ export type MainViewAPI =
     emergencyExit                  : (msg : string) => void;
     askPermissionToSign            : (requestingURL : string, askingEntitySelfDescription : string, messageToSign : string, onSigningPermittedDecision : (permittedToSign : boolean) => any) => void;
     askPermissionToSend            : (requestingURL : string, params : ContractCallParams, onSendingPermittedDecision : (permittedToSend : boolean, amountSat : string, gasLimit : number, gasPrice : number) => any) => void;
-    showWalletWorking              : (workFunction : () => WorkFunctionResult) => void;
-    showWalletWorkingAsync         : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any) => void;
+    showWalletWorking              : (workFunction : () => WorkFunctionResult, whatWorksGoingOn? : string) => void;
+    showWalletWorkingAsync         : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any, whatWorksGoingOn? : string) => void;
     restartUserInactivityTimer     : () => void;
     setUserInactivityTimeoutMillis : (timeoutMillis : number) => void;
     getUserInactivityTimeoutMillis : () => number;
@@ -105,6 +97,7 @@ let nextPermissionToSignViewProps : PermissionToSignViewProps;
 let nextPermissionToSendViewProps : PermissionToSendViewProps;
 let nextOnSigningPermittedDecision : (permittedToSign : boolean) => any;
 let nextOnSendingPermittedDecision : (permittedToSend : boolean, amountSat : string, gasLimit : number, gasPrice : number) => any;
+let whatWorksGoingOnCopy : string = "";
 let workFunctionCopy : (() => WorkFunctionResult) | null = null;
 let asyncWorkFunctionCopy : ((onWorkDone : (result : WorkFunctionResult) => any) => any) | null = null;
 
@@ -162,18 +155,20 @@ export default function MainView() : JSX.Element
         if (!active) MC.getMC().logout();
         }
 
-    function showWalletWorkingAsync(asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any) : void
+    function showWalletWorkingAsync(asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => any) => any, whatWorksGoingOn? : string) : void
         {
         if (asyncWorkFunctionCopy !== null) MC.raiseError("2nd work async functoion added before 1st one done.", "MainView showWorkingAsync()");
+        whatWorksGoingOnCopy = whatWorksGoingOn ? whatWorksGoingOn : "Loading ...";
         asyncWorkFunctionCopy = asyncWorkFunction;
-        rootNavigation.navigate(ROOT_SCREENS.WORKING_ASYNC, { nonce: MC.getUniqueInt() });
+        rootNavigation.navigate(ROOT_SCREENS.WORKING_ASYNC, { extraData: MC.getUniqueInt() });
         }
 
-    function showWalletWorking(workFunction : () => WorkFunctionResult) : void
+    function showWalletWorking(workFunction : () => WorkFunctionResult, whatWorksGoingOn? : string) : void
         {
         if (workFunctionCopy !== null) MC.raiseError("2nd work functoion added before 1st one done.", "MainView showWorking()");
+        whatWorksGoingOnCopy = whatWorksGoingOn ? whatWorksGoingOn : "Loading ...";
         workFunctionCopy = workFunction;
-        rootNavigation.navigate(ROOT_SCREENS.WORKING, { nonce: MC.getUniqueInt() });
+        rootNavigation.navigate(ROOT_SCREENS.WORKING, { extraData: MC.getUniqueInt() });
         }
 
     function goToBrowser() : void
@@ -299,13 +294,7 @@ export default function MainView() : JSX.Element
         inWallet = true;
         const am = MC.getMC().storage.accountManager;
         const initialWalletScreen = am.canLogin ? (am.isLoggedIn ? WALLET_SCREENS.ACCOUNT_HOME : WALLET_SCREENS.LOGIN) : WALLET_SCREENS.CREATE_ACCOUNT;
-        return (
-            <SafeAreaView>
-                <View style={ mainStyles.screenHolder }>
-                    <WalletView onBurgerPressed={ onBurgerPressed } getApi={ getWalletApi } initialScreen={ initialWalletScreen } />
-                </View>
-            </SafeAreaView>
-            );
+        return (<WalletView onBurgerPressed={ onBurgerPressed } getApi={ getWalletApi } initialScreen={ initialWalletScreen } />);
         }
 
     function WalletWorkingAsyncScreen() : JSX.Element
@@ -330,7 +319,7 @@ export default function MainView() : JSX.Element
                     100);
                 }
             });
-        return renderLoadingScreen();
+        return renderWorkingScreen(whatWorksGoingOnCopy);
         }
 
     function WalletWorkingScreen() : JSX.Element
@@ -353,10 +342,10 @@ export default function MainView() : JSX.Element
                     100);
                 }
             });
-        return renderLoadingScreen();
+        return renderWorkingScreen(whatWorksGoingOnCopy);
         }
 
-    function renderLoadingScreen() : JSX.Element
+    function renderWorkingScreen(whatWorksGoingOn : string) : JSX.Element
         {
         return (
             <SafeAreaView>
@@ -366,7 +355,7 @@ export default function MainView() : JSX.Element
                     <View style={{ ...commonStyles.columnContainerV2, height: "100%" }}>
                         <View style={{ flex: 1 }}/>
                         <View>
-                            <BurgerlessTitleBar title="Loading ..."/>
+                            <BurgerlessTitleBar title={ whatWorksGoingOn }/>
                             <View style={{ height: 48 }}/>
                             <View style={ commonStyles.squeezed }>
                                 <ProgressBar style={{ height: 12 }} indeterminate color={ COLOR_DARK_PURPLE }/>
@@ -463,7 +452,7 @@ export default function MainView() : JSX.Element
             setTimeout(startupSequence, 100);
             });
 
-        return renderLoadingScreen();
+        return renderWorkingScreen("Starting ...");
         }
 
     function DrawerContent(props : DrawerContentProps) : JSX.Element

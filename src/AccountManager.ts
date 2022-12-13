@@ -1,4 +1,4 @@
-import '../shim.js';
+import '../shimWrapper.js';
 
 import { generateMnemonic, Insight } from "metrixjs-wallet";
 import scrypt from "scryptsy";
@@ -11,7 +11,7 @@ import { MRC20Token } from './MRC20.js';
 
 
 const SCRYPT_PARAMS_PASSWORD = { N: 512, r: 8, p: 1 };  // TODO adjust this for production, MetrisMask browser extension uses SCRYPT_PARAMS_PASSWORD = { N: 131072, r: 8, p: 1 };
-const POLLING_INTERVAL_SECS = 80;
+const POLLING_INTERVAL_SECS  = 80;
 
 
 

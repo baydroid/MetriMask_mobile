@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Platform, ScrollView, Text, View } from "react-native";
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { RNCamera, BarCodeReadEvent } from 'react-native-camera';
 import { Button as PaperButton, IconButton } from "react-native-paper";
@@ -107,13 +107,14 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
             {
             const onPress = () : void => { if (flashMode != buttonFlashMode) setFlashMode(buttonFlashMode); };
             const color : string = flashMode == buttonFlashMode ? COLOR_GREEN : COLOR_DULL_GREEN;
-            return (
-                <IconButton style={ commonStyles.icon } color={ color } size={ 24 } icon={ iconName } onPress={ onPress }/>
-                );
+            return (<IconButton style={ commonStyles.icon } iconColor={ color } size={ 24 } icon={ iconName } onPress={ onPress }/>);
             }
 
+        const footerStyle : object = Platform.OS == "ios"
+            ? { ...commonStyles.rowContainerV2, paddingBottom: 24, paddingTop: 24, backgroundColor: "#000000" }
+            : { ...commonStyles.rowContainerV2, marginBottom: 24 };
         return (
-            <View style={{ ...commonStyles.rowContainerV2, marginBottom: 24 }}>
+            <View style={ footerStyle }>
                 <View style={{ width: 24 }}/>
                 <PaperButton onPress={ onCancel } style={{ borderColor: COLOR_GREEN, borderWidth: 1 }} mode="outlined" uppercase={ false } color={ COLOR_GREEN }>
                     <Text style={{ color: COLOR_GREEN }}>Cancel</Text>
@@ -135,7 +136,7 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
         {
         return (
             <>
-                <TitleBar title="Scan Address QR Code" onBurgerPressed={ props.onBurgerPressed }/>
+                <TitleBar title={ TARGET_TITLES[props.target] } onBurgerPressed={ props.onBurgerPressed }/>
                 <View style={ commonStyles.horizontalBar }/>
                 <View style={{ height: 24 }}/>
                 <ScrollView contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: COLOR_WHITE, margin: 0, padding: 0 }}>

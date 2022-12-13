@@ -1,4 +1,4 @@
-import "../../shim.js";
+import "../../shimWrapper.js";
 
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, useWindowDimensions, FlatList, ListRenderItemInfo } from "react-native";

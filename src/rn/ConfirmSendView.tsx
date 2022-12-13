@@ -1,4 +1,4 @@
-import "../../shim.js";
+import "../../shimWrapper.js";
 
 import React from "react";
 import { View } from "react-native";
