@@ -256,7 +256,7 @@ Verify that the Privacy - Camera Usage Description and the Fonts provided by app
 
 Now click on Pods in Xcode's left side panel.
 
-From the vertical list of pods at the left of Xcode's middle panel click om TcpSockets to select the TcpSockets pod. Click on the Build Phases tab of the middle panel, and expand the Compile Sources list. Remove GCDAsyncSocket.m from the list.
+From the vertical list of pods at the left of Xcode's middle panel click on TcpSockets to select the TcpSockets pod. Click on the Build Phases tab of the middle panel, and expand the Compile Sources list. Remove GCDAsyncSocket.m from the list.
 
 Do the same for the react-native-udp pod.
 
