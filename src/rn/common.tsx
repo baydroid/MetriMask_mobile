@@ -212,9 +212,17 @@ export function TitleBar(props : TitleBarProps) : JSX.Element
             <View style={ commonStyles.titleContainingView }>
                 <Text style={ commonStyles.titleText }>{ props.title }</Text>
             </View>
-            <IconButton style={ commonStyles.icon } iconColor={ COLOR_WHITE } size={ 24 } icon="menu"/>
+            <DummyBurger/>
         </View>
         );
+    }
+
+function DummyBurger() : JSX.Element
+    {
+    if (Platform.OS == "ios")
+        return (<IconButton style={ commonStyles.icon } iconColor={ COLOR_WHITE } size={ 24 } icon="menu"/>);
+    else
+        return (<IconButton style={ commonStyles.icon } color={ COLOR_WHITE } size={ 24 } icon="menu"/>);
     }
 
 
