@@ -221,6 +221,10 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
             return (<ProgressBar style = {{ height: 3 }} progress = { 1 } color ={ COLOR_DARK_PURPLE }/>);
         }
 
+    const BLANK_SOURCE = { html: "<!doctype html><html><head></head><body></body></html>" };
+    const webViewSource = Platform.OS === "ios" && currentUrl == "" ? BLANK_SOURCE : { uri: currentUrl };
+    const keyboardType = Platform.OS === "ios" ? "web-search" : "url";
+
     return (
         <View style={ isVisible() ? commonStyles.containingView : browserTabStyles.hiddenContainingView } { ...(Platform.OS === "android" && isVisible() ? { collapsable: false } : { }) }>
             { menu ? menu() : null }
@@ -232,7 +236,7 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
                     onEndEditing={ onEndEditintgUrlTextInput }
                     value={ urlInputText == "about:blank" ? "" : urlInputText }
                     placeholder="www.website.com"
-                    keyboardType="url"
+                    keyboardType={ keyboardType }
                     />
             </View>
             <WebProgressBar/>
@@ -240,7 +244,7 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
                 <WebView
                     style={ browserTabStyles.webView }
                     originWhitelist={[ "*" ]}
-                    source={{ uri: currentUrl }}
+                    source={ webViewSource }
                     injectedJavaScript={ initialJScript }
                     injectedJavaScriptBeforeContentLoaded={ initialBeforeJScript }
                     ref={ webref }

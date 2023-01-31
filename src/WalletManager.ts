@@ -397,7 +397,7 @@ export class WalletManager
         {
         if (args.length < 2) return { error: `Not enough arguments supplied to sign message.` };
         const message = args[1]
-        const prefix = (args.length === 3 && args[2] === true) ? `\x15Metrix Signed Message:\n` : undefined;
+        const prefix = (args.length === 3 && args[2] === true) ? `\x17Metrix Signed Message:\n` : undefined;
         const options = (args.length === 4 && JSON.stringify(args[3]).indexOf(`segwitType` || `extraEntropy`) !== -1) ? args[3] : undefined;
         try
             {
@@ -421,7 +421,7 @@ export class WalletManager
         const message = args[0];
         const address = args[1];
         const signature = args[2];
-        const prefix = (args.length === 4 && args[3] === true) ? '\x15Metrix Signed Message:\n' : undefined;
+        const prefix = (args.length === 4 && args[3] === true) ? '\x17Metrix Signed Message:\n' : undefined;
         let checkSegwitAlways;
         if (args.length === 5 && typeof args[4] === 'boolean') checkSegwitAlways = args[4];
         try

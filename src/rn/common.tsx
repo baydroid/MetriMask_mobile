@@ -180,6 +180,8 @@ function backHandler(showExitOption : boolean) : () => void
         return () : void => { ; };
     }
 
+
+
 export type InvalidMessageProps =
     {
     text: string;

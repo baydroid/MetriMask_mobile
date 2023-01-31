@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { GestureResponderEvent, Keyboard, View } from "react-native";
 import { Insight } from "metrixjs-wallet";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -117,6 +117,13 @@ export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
         walletNavigation.navigate(WALLET_SCREENS.CREATE_ACCOUNT);
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearError();
+        return true;
+        }
+
     function clearError() : void
         {
         if (errorMsg.length) setErrorMsg("");
@@ -162,7 +169,7 @@ export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
         }
 
     return (
-        <View style={ commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Import Account" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>

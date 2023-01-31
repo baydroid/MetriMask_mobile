@@ -89,9 +89,7 @@ To use a specific version of react-native use a project creation command such as
 
 #### STEP 3)
 
-Copy everything except package.json and package-lock.json from the github into the project directory.
-
-Note that package.json and package-lock.json come from the Android project (not the iOS 1).
+Copy everything except for the folders build and package_lock_etc from the github into the project directory.
 
 #### STEP 4)
 
@@ -178,8 +176,13 @@ Add the Ios icons by copying the contents of Images.xcassets to ios/MetriMask_mo
 
 #### STEP 12i)
 
-Edit ios/MetriMask_mobile/Info.plist, add the following 2 key value pairs to it in the dict section.
+Edit ios/MetriMask_mobile/Info.plist, add the following 3 key value pairs to it in the dict section.
 
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>http</string>
+        <string>https</string>
+    </array>
     <key>NSCameraUsageDescription</key>
     <string>MetriMask uses the camera to scan QR codes.</string>
     <key>UIAppFonts</key>
@@ -201,7 +204,7 @@ Edit ios/MetriMask_mobile/Info.plist, add the following 2 key value pairs to it 
         <string>Zocial.ttf</string>
     </array>
 
-If there's an existing UIAppFonts section amalgamate the fonts from it and the UIAppFonts section above to make a single UIAppFonts section. If there's an existing NSCameraUsageDescription section overwrite it. Afterwards Info.plist should look something like this
+If there's an existing UIAppFonts section amalgamate the fonts from it and the UIAppFonts section above to make a single UIAppFonts section. If there's an existing LSApplicationQueriesSchemes section amalgamate the strings from it and the LSApplicationQueriesSchemes section above to make a single LSApplicationQueriesSchemes section. If there's an existing NSCameraUsageDescription section overwrite it. Afterwards Info.plist should look something like this
 
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -210,6 +213,11 @@ If there's an existing UIAppFonts section amalgamate the fonts from it and the U
 
         <!-- Other stuff -->
 
+        <key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>http</string>
+            <string>https</string>
+        </array>
         <key>NSCameraUsageDescription</key>
         <string>MetriMask uses the camera to scan QR codes.</string>
         <key>UIAppFonts</key>
@@ -252,7 +260,7 @@ Under Deployment Info/Orientation make sure only portrait is selected for both i
 
 Click on the Info tab.
 
-Verify that the Privacy - Camera Usage Description and the Fonts provided by application keys are present. If they aren't edit Info.plist again.
+Verify that the Privacy - Camera Usage Description, the Queried URL Schemes, and the Fonts provided by application keys are present. If they aren't edit Info.plist again.
 
 Now click on Pods in Xcode's left side panel.
 
@@ -276,7 +284,7 @@ From the terminal window not running Metro in the project directiory build and r
 
 To build and run the release verion instead use this command
 
-    npx react-native run-ios --variant=release
+    npx react-native run-ios --configuration=Release
 
 
 

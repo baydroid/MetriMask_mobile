@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { GestureResponderEvent, Keyboard, View } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -99,6 +99,13 @@ export function AcceptTokenView(props : AcceptTokenViewProps) : JSX.Element
         if (errMsg.length) setErrMsg("");
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearErrMsg();
+        return true;
+        }
+
     function onChangeName(txt : string) : void
         {
         validateNotEmpty(name, ERROR_EMPTY_NAME);
@@ -133,7 +140,7 @@ export function AcceptTokenView(props : AcceptTokenViewProps) : JSX.Element
         }
 
     return (
-        <View style={ commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Add Token to Wallet?" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>

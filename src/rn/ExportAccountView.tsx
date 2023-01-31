@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Text } from "react-native";
+import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Text, GestureResponderEvent, Keyboard } from "react-native";
 
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
@@ -70,21 +70,26 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
         if (invalidPassword) setInvalidPassword(false);
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearInvalidPassword();
+        return true;
+        }
+
     function renderPasswordInput() : JSX.Element
         {
-        function setSecure(secureInput : boolean) : void
-            {
-            securePasswordRef.current?.clear();
-            plainPasswordRef.current?.clear();
-            setPassword("");
-            setUseSecureInput(secureInput);
-            clearInvalidPassword();
-            }
-
         function setPasswordAndClearInvalid(txt : string) : void
             {
             setPassword(txt);
             clearInvalidPassword();
+            }
+
+        function setSecure(beSecure : boolean) : void
+            {
+            if (beSecure == useSecureInput) return;
+            if (beSecure && password != "") setPassword("");
+            setUseSecureInput(beSecure);
             }
 
         if (useSecureInput)
@@ -134,7 +139,7 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
         }
 
     return (
-        <View style={ commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Export Account WIF" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>

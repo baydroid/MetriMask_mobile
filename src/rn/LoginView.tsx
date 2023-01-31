@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Image, useWindowDimensions } from "react-native";
+import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Image, useWindowDimensions, GestureResponderEvent, Keyboard } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -91,6 +91,13 @@ export function LoginView(props : LoginViewProps) : JSX.Element
         props.onBurgerPressed();
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearInvalidPassword();
+        return true;
+        }
+
     function clearInvalidPassword() : void
         {
         invalidPasswordNonce++;
@@ -99,19 +106,17 @@ export function LoginView(props : LoginViewProps) : JSX.Element
 
     function renderPasswordInput() : JSX.Element
         {
-        function setSecure(secureInput : boolean) : void
-            {
-            securePasswordRef.current?.clear();
-            plainPasswordRef.current?.clear();
-            setPassword("");
-            setUseSecureInput(secureInput);
-            clearInvalidPassword();
-            }
-
         function setPasswordAndClearInvalid(txt : string) : void
             {
             setPassword(txt);
             clearInvalidPassword();
+            }
+
+        function setSecure(beSecure : boolean) : void
+            {
+            if (beSecure == useSecureInput) return;
+            if (beSecure && password != "") setPassword("");
+            setUseSecureInput(beSecure);
             }
 
         if (useSecureInput)
@@ -176,7 +181,7 @@ export function LoginView(props : LoginViewProps) : JSX.Element
         }
 
     return (
-        <View style = { commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Unlock Wallet" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ flex: 100 }}/>

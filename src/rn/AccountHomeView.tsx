@@ -6,8 +6,8 @@ import { IconButton, TouchableRipple, ProgressBar } from "react-native-paper";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from "@react-navigation/stack";
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
-import { TabView, TabBar, SceneMap, SceneRendererProps, NavigationState } from 'react-native-tab-view';
-import { Scene } from "react-native-tab-view/lib/typescript/types";
+import { TabView, TabBar, SceneMap, SceneRendererProps, NavigationState, } from 'react-native-tab-view';
+import { Scene } from "react-native-tab-view/lib/typescript/src/types.js";
 
 import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet, COLOR_BLACK, COLOR_DARKISH_PURPLE, COLOR_DARK_PURPLE, COLOR_LIGHT_GREY, COLOR_WHITE, COLOR_PURPLE_RIPPLE, COLOR_LIGHTISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";

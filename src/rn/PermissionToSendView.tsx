@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, GestureResponderEvent, Keyboard } from "react-native";
 
 import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, MRX_DECIMALS } from "../mc";
 import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, COLOR_BLACK, COLOR_MIDDLE_GREY } from "./common";
@@ -99,6 +99,13 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
         setGasPriceStr(newGasPriceStr.trim());
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearError();
+        return true;
+        }
+
     function clearError() : void
         {
         if (errorMessage.length) setErrorMessage("");
@@ -120,7 +127,7 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
         }
 
     return (
-        <View style={ commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <BurgerlessTitleBar title="Permission to Transact?"/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ ...commonStyles.squeezed, flexDirection: "column", flex: 1 }}>

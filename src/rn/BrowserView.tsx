@@ -560,26 +560,26 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
         return (
             <View style={ browserViewStyles.buttonBar }>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="arrow-left" disabled={ !canGoBack } onPress={ onBackPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="arrow-left" disabled={ !canGoBack } onPress={ onBackPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="refresh" disabled={ tabCount == 0 } onPress={ onLoadPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="refresh" disabled={ tabCount == 0 } onPress={ onLoadPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="arrow-right" disabled={ !canGoForward } onPress={ onForwardPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="arrow-right" disabled={ !canGoForward } onPress={ onForwardPressed }/>
                 </View>
                 <View style={ browserViewStyles.halfButtonView }></View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-remove" disabled={ tabCount == 0 } onPress={ onBottomBarCloseTabPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-remove" disabled={ tabCount == 0 } onPress={ onBottomBarCloseTabPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab" disabled={ tabCount == 0 } onPress={ onTabListPressed }/>
                 </View>
                 <View style={ browserViewStyles.buttonView }>
-                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="dots-horizontal" onPress={ openMenu }/>
+                    <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="dots-horizontal" onPress={ openMenu }/>
                 </View>
             </View>
             );
@@ -629,7 +629,7 @@ export default function BrowserView(props : BrowserViewProps) : JSX.Element
                     <View style={{ flex: 1 }}/>
                     <View style={ commonStyles.titleContainingView }>
                         <Text style={{ color: COLOR_BLACK }}>Use the</Text>
-                        <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } color={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
+                        <IconButton style={ commonStyles.icon } rippleColor={ COLOR_PURPLE_RIPPLE } iconColor={ COLOR_DARK_PURPLE } size={ 24 } icon="tab-plus" onPress={ onNewTabPressed }/>
                         <Text style={{ color: COLOR_BLACK }}>button to open a new tab.</Text>
                     </View>
                     <View style={{ flex: 1 }}/>

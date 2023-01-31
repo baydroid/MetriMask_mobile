@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Text, View, TextInput, Keyboard } from "react-native";
+import { Text, View, TextInput, Keyboard, GestureResponderEvent } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -137,20 +137,24 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
 
     function clearErrorCondition() : void
         {
-        setNetworkDDOpen(false);
-        setErrorMsg("");
+        if (networkDDOpen) setNetworkDDOpen(false);
+        if (errorMsg != "") setErrorMsg("");
+        }
+
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearErrorCondition();
+        return true;
         }
 
     function renderPasswordInput() : JSX.Element | null
         {
-        function setSecure(secureInput : boolean) : void
+        function setSecure(beSecure : boolean) : void
             {
-            securePasswordRef.current?.clear();
-            confirmPasswordRef.current?.clear();
-            plainPasswordRef.current?.clear();
-            setPassword("");
-            setConfirmPassword("");
-            setUseSecureInput(secureInput);
+            if (beSecure == useSecureInput) return;
+            if (beSecure && password != "") setPassword("");
+            setUseSecureInput(beSecure);
             }
 
         if (am.isLoggedIn)
@@ -233,7 +237,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
         }
 
     return (
-        <View style = { commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Add Account" onBurgerPressed={ onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 24 }}/>

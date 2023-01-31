@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { GestureResponderEvent, Keyboard, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -87,8 +87,14 @@ export function ResetAppView(props : ResetAppViewProps) : JSX.Element
             }
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        return true;
+        }
+
     return (
-        <View style={ commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Reset MetriMask?" onBurgerPressed={ props.onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>

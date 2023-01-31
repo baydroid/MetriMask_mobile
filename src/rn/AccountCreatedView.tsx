@@ -63,7 +63,7 @@ export function AccountCreatedView(props : AccountCreatedViewProps) : JSX.Elemen
             <View style={ commonStyles.squeezed }>
                 <SimpleButton text="Copy to Clipboard" icon="content-copy" onPress={ () : void => Clipboard.setString(mnemonic) }/>
                 <View style={ { height: 24 } }/>
-                <Text>Keep the mnemonic (shown above on a green background) secret. It can be used to open the account in other wallets.</Text>
+                <Text>Keep the mnemonic (shown above on a green background) secret. It can be used to open the account in this and other wallets.</Text>
                 <View style={ { height: 6 } }/>
                 <Text>After tapping OK this app will not be able to show the mnemonic again. Please record it now.</Text>
                 <View style={ { height: 24 } }/>

@@ -19,8 +19,7 @@ export enum NET_ID
     {
     MAIN   = 0,
     TEST   = 1,
-    REG    = 2,
-    length = 3
+    length = 2
     };
 
 
@@ -215,7 +214,6 @@ export class NetInfoManager
         {
         this.infoArray.push(new NetInfoWithMns("MainNet", NET_ID.MAIN, "https://explorer.metrixcoin.com/tx/",         "https://explorer.metrixcoin.com/mrc20/",         networks.mainnet));
         this.infoArray.push(new NetInfoWithMns("TestNet", NET_ID.TEST, "https://testnet-explorer.metrixcoin.com/tx/", "https://testnet-explorer.metrixcoin.com/mrc20/", networks.testnet));
-        this.infoArray.push(new NetInfo       ("RegTest", NET_ID.REG,  "https://localhost/tx/",                       "https://localhost/mrc20/",                       networks.regtest));
         for (const ni of this.infoArray) this.infosByNmae.set(ni.name, ni);
         }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View } from "react-native";
+import { GestureResponderEvent, Keyboard, View } from "react-native";
 
 import { ADDRESS_SYNTAX, MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
@@ -127,6 +127,13 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
         if (errMsg != newErrMsg) setErrMsg(newErrMsg);
         }
 
+    function onGeneralTouch(evt : GestureResponderEvent) : boolean
+        {
+        Keyboard.dismiss();
+        clearError();
+        return true;
+        }
+
     function renderInvalidAddress() : JSX.Element | null
         {
         if (errMsg.length)
@@ -151,7 +158,7 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
         }
 
     return (
-        <View style={ commonStyles.containingView }>
+        <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Find MRC20 Token" onBurgerPressed={ props.onBurgerPressed }/>
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
