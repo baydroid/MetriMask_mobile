@@ -127,12 +127,12 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
 
     function formatBalance() : string
         {
-        return am.current.wm.balanceSat.greaterOrEquals(BIG_0) ? formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) : LOADING_STR;
+        return am.current.wm.balanceSat >= BIG_0 ? formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) : LOADING_STR;
         }
 
     function formatUnconfirmedBalance() : string
         {
-        return am.current.wm.unconfirmedBalanceSat.greaterOrEquals(BIG_0) ? formatSatoshi(am.current.wm.unconfirmedBalanceSat, MRX_DECIMALS) : LOADING_STR;
+        return am.current.wm.unconfirmedBalanceSat >= BIG_0 ? formatSatoshi(am.current.wm.unconfirmedBalanceSat, MRX_DECIMALS) : LOADING_STR;
         }
 
     function setTabIndex(index : TAB_INDEX) : void
@@ -216,12 +216,12 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
 
     function onShowTx(ti : TransactionInfo) : void
         {
-        mc.openUrlInNewTab(am.current.wm.ninfo.txUrlHeader + ti.id);
+        mc.openUrlInNewTab(am.current.wm.ninfo.toTxUrl(ti.id));
         }
 
     function onShowToken(tk : MRC20Token) : void
         {
-        mc.openUrlInNewTab(am.current.wm.ninfo.tokenUrlHeader + tk.address);
+        mc.openUrlInNewTab(am.current.wm.ninfo.toTokenUrl(tk.address));
         }
 
     function onLoadMoreTxs() : void

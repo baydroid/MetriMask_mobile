@@ -149,7 +149,7 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
             return null;
         }
 
-    function TokenAddressTextInput() : JSX.Element
+    function renderTokenAddressTextInput() : JSX.Element
         {
         if (showQRButton)
             return (<SimpleTextInput label="Token Address or MNS name:" value={ address } onChangeText={ (txt : string) : void => setAddress(txt) } icon="qrcode" onPressIcon={ onQRScanPressed }/>);
@@ -163,7 +163,7 @@ export function AddTokenView(props : AddTokenViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={ commonStyles.squeezed }>
                 <View style={{ height: 24 }} />
-                <TokenAddressTextInput/>
+                { renderTokenAddressTextInput() }
                 <View style={{ height: 24 }} />
                 <SimpleButton text="Find Token" onPress={ addToken }/>
                 { renderInvalidAddress() }

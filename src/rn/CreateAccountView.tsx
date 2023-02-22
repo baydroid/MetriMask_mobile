@@ -9,7 +9,7 @@ import { nim } from "../NetInfo";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { NET_ID } from "../NetInfo";
-import { commonStyles, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
+import { commonStyles, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage, netInfoDropDownItems, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
 import { Insight } from "metrixjs-wallet";
 
 
@@ -36,7 +36,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
     const [ errorMsg, setErrorMsg ] = useState<string>("");
     const [ networkDDOpen, setNetworkDDOpen ] = useState<boolean>(false);
     const [ networkDDValue, setNetworkDDValue ] = useState<ValueType | null>(NET_ID.MAIN);
-    const [ networkDDItems, setNetworkDDItems ] = useState<ItemType<number>[]>(nim().netInfoDropDownItems);
+    const [ networkDDItems, setNetworkDDItems ] = useState<ItemType<number>[]>(netInfoDropDownItems());
 
     const securePasswordRef = useRef<TextInput>(null);
     const confirmPasswordRef = useRef<TextInput>(null);
@@ -217,7 +217,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
             );
         }
 
-    function BottomOfScreen() : JSX.Element
+    function renderBottomOfScreen() : JSX.Element
         {
         if (errorMsg.length)
             {
@@ -259,7 +259,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                 <SimpleTextInput label = "Account Name" value = { name } onFocus={ clearErrorCondition } onChangeText = { (txt : string) : void => { setName(txt) } }/>
                 { renderPasswordInput() }
                 <View style={{ height: 24 }}/>
-                <BottomOfScreen/>
+                { renderBottomOfScreen() }
             </View>
         </View>
         );

@@ -1,6 +1,5 @@
 import "../shimWrapper.js";
 
-import toBigInteger, { BigInteger } from "big-integer";
 const bitcoin = require("bitcoinjs-lib");
 import metrixMessage from "bitcoinjs-message";
 import { Insight, Wallet as MRXWallet, WalletRPCProvider } from "metrixjs-wallet";
@@ -9,7 +8,7 @@ import { Mweb3 } from "mweb3";
 import { MC, BIG_0, SATOSHIS_PER_MRX, MRX_DECIMALS, DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_MRX } from "./mc";
 import { NetInfo } from "./NetInfo";
 import { mrc20TokenABI } from "./mrc20TokenABI";
-import { SerializableMRC20Token } from "./MRC20.js";
+import { SerializableMRC20Token } from "./MRC20";
 
 
 
@@ -43,13 +42,11 @@ interface Mweb3ContractCallParams
     senderAddress : string;
     }
 
-interface Mweb3ContractSendParams
+interface Mweb3ContractSendParams extends Mweb3ContractCallParams
     {
-    methodArgs    : any[];
-    senderAddress : string;
-    amount?       : number;
-    gasLimit?     : number | string;
-    gasPrice?     : number; // MRX/GAS (i.e. not Satoshi/GAS)
+    amount?   : number;
+    gasLimit? : number | string;
+    gasPrice? : number; // MRX/GAS (i.e. not Satoshi/GAS)
     }
 
 abstract class Mweb3Contract
@@ -122,10 +119,10 @@ export class WalletManager
     private walletMweb3 : Mweb3Main | null = null;
     private walletAddress : string = "";
     private nnsNameByReversal : string = "";
-    private lastBalanceSat : BigInteger = toBigInteger(-10);
-    private lastBalanceSatDelta : BigInteger = BIG_0;
-    private lastUnconfirmedBalanceSat : BigInteger = toBigInteger(-10);
-    private lastUnconfirmedBalanceSatDelta : BigInteger = BIG_0;
+    private lastBalanceSat : bigint = BigInt(-10);
+    private lastBalanceSatDelta : bigint = BIG_0;
+    private lastUnconfirmedBalanceSat : bigint = BigInt(-10);
+    private lastUnconfirmedBalanceSatDelta : bigint = BIG_0;
     private lastTxCount : number = 0;
     private lastUnconfirmedTxCount : number = 0;
     private lastTxCountDelta : number = 0;
@@ -143,10 +140,10 @@ export class WalletManager
     public get rpcProvider()                : WalletRPCProvider { return this.walletRpcProvider!              }
     public get address()                    : string            { return this.walletAddress;                  }
     public get mnsNmae()                    : string            { return this.nnsNameByReversal;              }
-    public get balanceSat()                 : BigInteger        { return this.lastBalanceSat;                 }
-    public get balanceSatDelta()            : BigInteger        { return this.lastBalanceSatDelta;            }
-    public get unconfirmedBalanceSat()      : BigInteger        { return this.lastUnconfirmedBalanceSat;      }
-    public get unconfirmedBalanceSatDelta() : BigInteger        { return this.lastUnconfirmedBalanceSatDelta; }
+    public get balanceSat()                 : bigint            { return this.lastBalanceSat;                 }
+    public get balanceSatDelta()            : bigint            { return this.lastBalanceSatDelta;            }
+    public get unconfirmedBalanceSat()      : bigint            { return this.lastUnconfirmedBalanceSat;      }
+    public get unconfirmedBalanceSatDelta() : bigint            { return this.lastUnconfirmedBalanceSatDelta; }
     public get txCount()                    : number            { return this.lastTxCount;                    }
     public get unconfirmedTxCount()         : number            { return this.lastUnconfirmedTxCount;         }
     public get txCountDelta()               : number            { return this.lastTxCountDelta;               }
@@ -208,9 +205,9 @@ export class WalletManager
         this.walletAddress = this.ownWallet!.keyPair.getAddress();
         this.walletRpcProvider = new WalletRPCProvider(this.ownWallet!);
         this.walletMweb3 = new Mweb3(this.walletRpcProvider);
-        this.lastBalanceSat = toBigInteger(-10);
+        this.lastBalanceSat = BigInt(-10);
         this.lastBalanceSatDelta = BIG_0;
-        this.lastUnconfirmedBalanceSat = toBigInteger(-10);
+        this.lastUnconfirmedBalanceSat = BigInt(-10);
         this.lastUnconfirmedBalanceSatDelta = BIG_0;
         this.lastTxCount = 0;
         this.lastUnconfirmedTxCount = 0;
@@ -276,11 +273,11 @@ export class WalletManager
             else
                 this.ownWallet!.getInfo().then((info : Insight.IGetInfo) : void =>
                     {
-                    const balanceSat = toBigInteger(info.balanceSat);
-                    this.lastBalanceSatDelta = this.lastBalanceSat.minus(balanceSat);
+                    const balanceSat = BigInt(info.balanceSat);
+                    this.lastBalanceSatDelta = this.lastBalanceSat - balanceSat;
                     this.lastBalanceSat = balanceSat;
-                    const unconfirmedBalanceSat = toBigInteger(info.unconfirmedBalanceSat);
-                    this.lastUnconfirmedBalanceSatDelta = this.lastUnconfirmedBalanceSat.minus(unconfirmedBalanceSat);
+                    const unconfirmedBalanceSat = BigInt(info.unconfirmedBalanceSat);
+                    this.lastUnconfirmedBalanceSatDelta = this.lastUnconfirmedBalanceSat - unconfirmedBalanceSat;
                     this.lastUnconfirmedBalanceSat = unconfirmedBalanceSat;
                     this.lastTxCountDelta = info.txApperances - this.lastTxCount;
                     this.lastUnconfirmedTxCountDelta = info.unconfirmedTxApperances - this.lastUnconfirmedTxCount;
@@ -298,8 +295,9 @@ export class WalletManager
         return this.ownWallet!.getTransactions(pageNum);
         }
 
-    public getMRC20Balance(contractAddr : string) : Promise<string>
+    public getMRC20Balance(contractAddress : string) : Promise<string>
         {
+        const contractAddr = MC.canonicalizeEvmAddress(contractAddress)!;
         return new Promise<string>((resolve : (balanceStr : string) => any, reject : (e : any) => any) =>
             {
             const c : Mweb3Contract = this.walletMweb3!.Contract(contractAddr, mrc20TokenABI);
@@ -315,8 +313,9 @@ export class WalletManager
             });
         }
 
-    public getMRC20Info(contractAddr : string) : Promise<SerializableMRC20Token>
+    public getMRC20Info(contractAddress : string) : Promise<SerializableMRC20Token>
         {
+        const contractAddr = MC.canonicalizeEvmAddress(contractAddress)!;
         return new Promise<SerializableMRC20Token>((resolve : (info : SerializableMRC20Token) => any, reject : (e : any) => any) =>
             {
             const c : Mweb3Contract = this.walletMweb3!.Contract(contractAddr, mrc20TokenABI);
@@ -369,8 +368,9 @@ export class WalletManager
             });
         }
 
-    public mrc20Send(contractAddr : string, recipientAddr : string, amount : BigInteger, gasLimit? : number | undefined, gasPriceSat? : number | undefined) : Promise<string>
+    public mrc20Send(contractAddress : string, recipientAddr : string, amount : bigint, gasLimit? : number | undefined, gasPriceSat? : number | undefined) : Promise<string>
         {
+        const contractAddr = MC.canonicalizeEvmAddress(contractAddress)!;
         return new Promise<string>((resolve : (txid : string) => any, reject : (e : any) => any) =>
             {
             const mrxPerGas : number = gasPriceSat ? gasPriceSat/SATOSHIS_PER_MRX : DEFAULT_GAS_PRICE_MRX;

@@ -2,7 +2,7 @@
 
 Note that all pathnames are given relative to the project directory (apart from those in the Software versions used in this build guide section).
 
-Also note that package.json and package-lock.json come from the Android project (not the iOS 1).
+You can find package.json and package-lock.json in the package_etc folder.
 
 
 
@@ -13,7 +13,7 @@ Also note that package.json and package-lock.json come from the Android project 
     System:
         OS: Linux 5.14 Fedora 33 (Workstation Edition) 33 (Workstation Edition)
         CPU: (32) x64 AMD Ryzen 9 3950X 16-Core Processor
-        Memory: 94.30 GB / 125.72 GB
+        Memory: 104.22 GB / 125.72 GB
         Shell: 5.0.17 - /bin/bash
     Binaries:
         Node: 16.13.2 - ~/.nvm/versions/node/v16.13.2/bin/node
@@ -33,29 +33,29 @@ Also note that package.json and package-lock.json come from the Android project 
     npmGlobalPackages:
         *react-native*: Not Found
 
-For some reason npx react-native info couldn't find Android Studio, or the SDK, or the JDK. So I filled in those bits by hand.
+For some reason npx react-native info couldn't find Android Studio, or the SDK, or the JDK. So I filled in those bits by hand. Also, despite what npx react-native info says, I think it might be using React-Native v0.72.3.
 
 #### iOS
 
     System:
         OS: macOS 12.6
         CPU: (8) arm64 Apple M1
-        Memory: 4.45 GB / 16.00 GB
+        Memory: 4.50 GB / 16.00 GB
         Shell: 5.8.1 - /bin/zsh
     Binaries:
         Node: 18.10.0 - /opt/homebrew/bin/node
         Yarn: Not Found
-        npm: 9.1.1 - /opt/homebrew/bin/npm
+        npm: 9.5.0 - /opt/homebrew/bin/npm
         Watchman: 2022.09.26.00 - /opt/homebrew/bin/watchman
     Managers:
         CocoaPods: 1.11.3 - /Users/loma/.gem/ruby/2.7.0/bin/pod
     SDKs:
         iOS SDK:
-        Platforms: DriverKit 22.1, iOS 16.1, macOS 13.0, tvOS 16.1, watchOS 9.1
-        Android SDK: Not Found
+            Platforms: DriverKit 22.2, iOS 16.2, macOS 13.1, tvOS 16.1, watchOS 9.1
+         Android SDK: Not Found
     IDEs:
         Android Studio: Not Found
-        Xcode: 14.1/14B47b - /usr/bin/xcodebuild
+        Xcode: 14.2/14C18 - /usr/bin/xcodebuild
     Languages:
         Java: Not Found
     npmPackages:
@@ -65,8 +65,6 @@ For some reason npx react-native info couldn't find Android Studio, or the SDK, 
         react-native-macos: Not Found
     npmGlobalPackages:
         *react-native*: Not Found
-
-
 
 ### FIRST STEPS FOR BOTH iOS AND ANDROID
 
@@ -89,7 +87,7 @@ To use a specific version of react-native use a project creation command such as
 
 #### STEP 3)
 
-Copy everything except for the folders build and package_lock_etc from the github into the project directory.
+Copy everything except for the folders build and package_etc from the github into the project directory.
 
 #### STEP 4)
 
@@ -105,11 +103,18 @@ Hack the node modules with this command.
 
 #### STEP 6)
 
-Follow the instructions here
+Follow the instructions here on editing babel.config.js to complete the installation of react-native-reanimated.
 
     https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation/
 
-to complete the installation of react-native-reanimated. The project does use proguard, so android/app/proguard-rules.pro must be edited, as well as babel.config.js.
+The project does use proguard, so android/app/proguard-rules.pro must be edited, as well as babel.config.js.
+
+Also add the plugin @babel/plugin-proposal-private-methods to babel.config.js, with the loose option set to true. Be careful to make sure that react-native-reanimated/plugin comes last in the plugin array. Assuming there aren't any other plugins at the end of the editing babel.config.js should look something like this:
+
+    module.exports = {
+      presets: ["module:metro-react-native-babel-preset"],
+      plugins: [["@babel/plugin-proposal-private-methods", { "loose": true }], "react-native-reanimated/plugin"]
+    };
 
 #### STEP 7)
 
@@ -126,19 +131,38 @@ to
 
     import App from './src/rn/MainView';
 
+#### STEP 8)
+
+Edit node_modules/react-native/Libraries/Lists/FlatList.js.
+
+Find the constructor for class FlatList (currently at line 412 of FlatList.js). The 1st executable line of the constructor should be
+
+    super(props);
+
+Immediately after this line, insert the line
+
+    this.props = props;
+
+With the current version of FlatList.js the start of the constructor should now look something like this:
+
+    constructor(props: Props<ItemT>) {
+      super(props);
+      this.props = props;
+      this._checkProps(this.props);
+
 
 
 #### SUBSEQUENT STEPS FOR IOS
 
-#### STEP 8i)
+#### STEP 9i)
 
-The pod install command won't work unless the porject's a git repository. So, if it's not already a git repo then make it so. For example, with these commands
+The pod install command won't work unless the project's a git repository. So, if it's not already a git repo then make it so. For example, with these commands
 
     git init
     git add --all
     git commit -m "initial commit"
 
-#### STEP 9i)
+#### STEP 10i)
 
 Following the instructions here
 
@@ -160,7 +184,7 @@ to the target 'MetriMask_mobile' do ... end section, like so
 
     end
 
-#### STEP 10i)
+#### STEP 11i)
 
 Run pod install in the ios directory.
 
@@ -168,13 +192,13 @@ Run pod install in the ios directory.
     pod install
     cd ..
 
-#### STEP 11i)
+#### STEP 12i)
 
 Add the Ios icons by copying the contents of Images.xcassets to ios/MetriMask_mobile/Images.xcassets, overwriting Contents.json.
 
     cp -r Images.xcassets/* ios/MetriMask_mobile/Images.xcassets
 
-#### STEP 12i)
+#### STEP 13i)
 
 Edit ios/MetriMask_mobile/Info.plist, add the following 3 key value pairs to it in the dict section.
 
@@ -244,9 +268,9 @@ If there's an existing UIAppFonts section amalgamate the fonts from it and the U
     </dict>
     </plist>
 
-#### STEP 13i)
+#### STEP 14i)
 
-Open the project in Xcode (I.E. open ios/MetriMask_mobile.xcodeproj).
+Open the project in Xcode. To do this start Xcode, and select Open a project or file. Open the ios folder, do not open the file ios/MetriMask_mobile.xcodeproj. Wait until Xcode finishes analyzing the project before moving on.
 
 Click on Xcode's top bar icon of a microwave oven with the controls on the left to open its left side vertical panel. Click on the folder icon at the left of the icon row at the top of this panel. Click on MetriMask_mobile in the left panel. From TARGETS at the left of the middle panel click on MetriMask_mobile.
 
@@ -270,19 +294,19 @@ Do the same for the react-native-udp pod.
 
 Note that Xcode may sneak these compile sources back in again if you change any project dependencies. If the build fails with a duplicate symbol linker error check to see if GCDAsyncSocket.m has come back, and, if so, remove it again.
 
-#### STEP 14i)
+#### STEP 15i)
 
 In a 2nd terminal window change to the project directory, and start Metro with this command
 
     npx react-native start --reset-cache
 
-#### STEP 15i)
+#### STEP 16i)
 
-From the terminal window not running Metro in the project directiory build and run the debug version of the app with this command.
+From the terminal window not running Metro in the project directory build and run the debug version of the app with this command.
 
     npx react-native run-ios
 
-To build and run the release verion instead use this command
+To build and run the release version instead use this command
 
     npx react-native run-ios --configuration=Release
 
@@ -290,13 +314,13 @@ To build and run the release verion instead use this command
 
 #### SUBSEQUENT STEPS FOR ANDROID
 
-#### STEP 8a)
+#### STEP 9a)
 
 Edit android/build.gradle. Add the line
 
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0')
 
-to the esisting buildscript.dependencies section already in the file (just above where the comments say not to add dependancies). I.E. placed like so.
+to the existing buildscript.dependencies section already in the file (just above where the comments say not to add dependancies). I.E. placed like so.
 
     buildscript {
         dependencies {
@@ -304,13 +328,15 @@ to the esisting buildscript.dependencies section already in the file (just above
         }
     }
     
-#### STEP 9a)
+#### STEP 10a)
 
 Edit android/app/build.gradle and, if necessary, change enableHermes: false to enableHermes: true in the existing project.ext.react section in the file. Afterwards it should look similar to this.
     
     project.ext.react = [
         enableHermes: true,  // clean and rebuild if changing
     ]
+
+Note in later versions of react-native Hermes is enabled by default.
 
 Now add the
 
@@ -328,7 +354,7 @@ Next, add the following line at the end of android/app/build.gradle (not inside 
 
     apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
-#### STEP 10a)
+#### STEP 11a)
 
 Edit android/app/src/main/AndroidManifest.xml.
 
@@ -342,7 +368,7 @@ to the
     <manifest>
 tag.
 
-Add android:exported="true" and android:screenOrientation="portrait" to the properties of the <activity> tag.
+Add android:exported="true" and android:screenOrientation="portrait" to the properties of the &lt;activity> tag.
 
 Afterwards the additions should be placed like this:
 
@@ -367,39 +393,9 @@ Add the intent filter
         <data android:scheme="http" />
     </intent-filter>
 
-to android/app/src/main/AndroidManifest.xml, imediately after the existing intent filter.
-
-#### STEP 11a)
-    
-Edit node_modules/react-native-os/android/build.gradle, change
-
-    dependencies {
-        compile 'com.facebook.react:react-native:+'
-    }
-
-to
-
-    dependencies {
-        implementation 'com.facebook.react:react-native:+'
-    }
+to android/app/src/main/AndroidManifest.xml, immediately after the existing intent filter.
 
 #### STEP 12a)
-
-Edit node_modules/react-native-tcp/android/build.gradle, change
-
-    dependencies {
-        compile 'com.facebook.react:react-native:+'
-        compile 'com.koushikdutta.async:androidasync:2.1.6'
-    }
-
-to
-
-    dependencies {
-        implementation 'com.facebook.react:react-native:+'
-        implementation 'com.koushikdutta.async:androidasync:2.1.6'
-    }
-
-#### STEP 13a)
 
 Edit android/app/src/main/res/values/strings.xml. Set the android app name by setting the value of the "app_name" string. Leave any other strings intact.
 
@@ -415,23 +411,41 @@ to
         <string name="app_name">MetriMask</string>
     </resources>
 
+#### STEP 13a)
+    
+Edit node_modules/react-native-os/android/build.gradle, change
+
+    dependencies {
+        compile 'com.facebook.react:react-native:+'
+    }
+
+to
+
+    dependencies {
+        implementation 'com.facebook.react:react-native:+'
+    }
+
 #### STEP 14a)
 
-comment out the @Override at line 33 of node_modules/react-native-udp/android/src/main/java/com/tradle/react/UdpSocketsModule.java. Thus
+Edit node_modules/react-native-tcp/android/build.gradle, change
 
-    @Override
-    public List<Class<? extends JavaScriptModule>> createJSModules() {
+    dependencies {
+        compile 'com.facebook.react:react-native:+'
+        compile 'com.koushikdutta.async:androidasync:2.1.6'
+    }
 
-becomes
+to
 
-    //@Override
-    public List<Class<? extends JavaScriptModule>> createJSModules() {
+    dependencies {
+        implementation 'com.facebook.react:react-native:+'
+        implementation 'com.koushikdutta.async:androidasync:2.1.6'
+    }
 
 #### STEP 15a)
 
 Provide the icons by copying the res folder to android/app/src/main, overwriting 10 PNG icon files.
 
-    cp -r res/* android/app/src/main/res
+    cp -rv res/* android/app/src/main/res
 
 #### STEP 16a)
 
@@ -441,11 +455,11 @@ In a 2nd terminal window change to the project directory, and start Metro with t
 
 #### STEP 17a)
 
-Activate developer mode on an android, enable USB debuging, and connect it to the computer. (You can actually skip this #### STEP and it will still build, but the build will complete with an emulator not found error).
+Activate developer mode on an android, enable USB debugging, and connect it to the computer. (You can actually skip this step and it will still build, but the build will complete with an emulator not found error).
 
 #### STEP 18a)
 
-From the terminal window not running Metro in the project directiory build and run the debug version of the app with this command.
+From the terminal window not running Metro in the project directory build and run the debug version of the app with this command.
 
     npx react-native run-android
 

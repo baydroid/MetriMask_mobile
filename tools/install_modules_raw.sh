@@ -1,5 +1,6 @@
+npm install --save-dev @babel/plugin-proposal-private-methods
 npm install --save assert
-npm install --save big-integer
+npm install --save ethers
 npm install --save idna-uts46
 npm install --save base58-js
 npm install --save sha256-uint8array
@@ -14,7 +15,6 @@ npm install --save @metrixcoin/metrilib
 npm install --save bs58
 npm install --save base-64
 npm install --save-dev @types/base-64
-npm install --save assert
 npm install --save scryptsy
 npm install --save-dev @types/scryptsy
 npm install --save keccak

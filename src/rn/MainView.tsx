@@ -18,8 +18,7 @@ import { PermissionToSignView, PermissionToSignViewProps } from "./PermissionToS
 import { PermissionToSendView, PermissionToSendViewProps } from "./PermissionToSendView";
 import { ContractCallParams } from "../WalletManager";
 import { AccountManager } from "../AccountManager";
-import { BigInteger } from "big-integer";
-import { MRXStorage } from "../MRXStorage.js";
+import { MRXStorage } from "../MRXStorage";
 
 
 
@@ -313,7 +312,8 @@ export default function MainView() : JSX.Element
                         {
                         asyncWorkFunction((result : WorkFunctionResult) : void =>
                             {
-                            walletNavigate(result.nextScreen, result.nextScreenParams);
+                            const nextScreenParams = result.nextScreenParams ? result.nextScreenParams : { };
+                            walletNavigate(result.nextScreen, nextScreenParams);
                             });
                         },
                     100);
@@ -473,8 +473,8 @@ export default function MainView() : JSX.Element
 
         function renderBalance(am : AccountManager) : JSX.Element | null
             {
-            const bal : BigInteger = am.current.wm.balanceSat;
-            if (bal.lesser(BIG_0))
+            const bal : bigint = am.current.wm.balanceSat;
+            if (bal < BIG_0)
                 return null;
             else
                 return(

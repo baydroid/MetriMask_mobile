@@ -4,7 +4,6 @@ import React from "react";
 import { View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import toBigInteger from "big-integer";
 
 import { MC, MRX_DECIMALS } from "../mc";
 import { AddressQuasiDoublet, commonStyles, DoubleDoublet, formatSatoshi, SimpleButtonPair, SimpleDoublet, TitleBar } from "./common";
@@ -64,7 +63,7 @@ export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
         {
         const gasPrice : number = Number.parseInt(props.gasPriceStr!);
         const gasLimit : number = Number.parseInt(props.gasLimitStr!);
-        am.current.wm.mrc20Send(tk!.address, props.toAddr, toBigInteger(props.amountStr), gasLimit, gasPrice).then((txid : string) : void =>
+        am.current.wm.mrc20Send(tk!.address, props.toAddr, BigInt(props.amountStr), gasLimit, gasPrice).then((txid : string) : void =>
             {
             const params : TransactionSentViewSerializableProps = { decimalizedAmountStr: decimalizedAmountStr, symbol: tk!.symbol, destinationAddr: props.toAddr, destinationMnsName: mnsName, txid: txid };
             onWorkDone({ nextScreen: WALLET_SCREENS.TX_SENT, nextScreenParams: params });

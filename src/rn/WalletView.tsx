@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, Platform, PlatformOSType } from "react-native";
+import { View, StyleSheet, Platform, Alert } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {check, request, Permission, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import {check, request, Permission, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
 import { CreateAccountView } from "./CreateAccountView";
 import { ImportAccountView } from "./ImportAccountView";
@@ -24,7 +24,6 @@ import { MC } from "../mc";
 import { WorkFunctionResult } from "./MainView";
 import { ResetAppView } from "./ResetAppView";
 import { ConfirmSendView } from "./ConfirmSendView";
-import { Alert } from "react-native";
 
 
 

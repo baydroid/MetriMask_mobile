@@ -2,13 +2,10 @@ import '../shimWrapper.js';
 
 import React from "react";
 import { BackHandler } from "react-native";
-import toBigInteger from "big-integer";
 import createKeccakHash from "keccak";
 import { setJSExceptionHandler } from 'react-native-exception-handler';
 import { randomBytes } from 'react-native-randombytes';
 import { validate } from "mrx-address-validation";
-//import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 import { BrowserAllTabsViewAPI, browserSetInitialUrl, BrowserTabContextBase } from "./rn/BrowserAllTabsView";
 import { BrowserTabContext } from "./BrowserTabContext";
@@ -25,7 +22,7 @@ export const SATOSHIS_PER_MRX          = 1e8;
 export const DEFAULT_GAS_LIMIT         = 250000;
 export const DEFAULT_GAS_PRICE_MRX     = 0.00005000;
 export const DEFAULT_GAS_PRICE_SATOSHI = DEFAULT_GAS_PRICE_MRX*SATOSHIS_PER_MRX;
-export const BIG_0                     = toBigInteger(0);
+export const BIG_0                     = BigInt(0);
 
 
 
@@ -95,9 +92,6 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
 
     private async initStore() : Promise<void>
         {
-
-//await AsyncStorage.clear();
-            
         await this.store.init();
         if (!this.store.salt.length)
             {
@@ -213,6 +207,12 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
     public static exitApp() : void
         {
         BackHandler.exitApp();
+        }
+
+    public static canonicalizeEvmAddress(address? : string) : string | null
+        {
+        if (!address) return null;
+        return ((address.startsWith(`0x`) || address.startsWith(`0X`)) ? address.substring(2) : address).toLowerCase();
         }
 
     public static anaylizeAddressSyntax(address : string) : ADDRESS_SYNTAX

@@ -108,20 +108,20 @@ export function AcceptTokenView(props : AcceptTokenViewProps) : JSX.Element
 
     function onChangeName(txt : string) : void
         {
-        validateNotEmpty(name, ERROR_EMPTY_NAME);
         setName(txt);
+        validateNotEmpty(name, ERROR_EMPTY_NAME);
         }
 
     function onChangeSymbol(txt : string) : void
         {
-        validateNotEmpty(symbol, ERROR_EMPTY_SYMBOL);
         setSymbol(txt);
+        validateNotEmpty(symbol, ERROR_EMPTY_SYMBOL);
         }
 
     function onChangeDecimals(txt : string) : void
         {
-        validateDecimals();
         setDecimals(txt);
+        validateDecimals();
         }
 
     function renderErrMsg() : JSX.Element | null

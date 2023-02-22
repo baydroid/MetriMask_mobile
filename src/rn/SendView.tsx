@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { GestureResponderEvent, Keyboard, NativeSyntheticEvent, Text, TextInputEndEditingEventData, View } from "react-native";
 import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker';
 import { useNavigation } from "@react-navigation/native";
-import toBigInteger, { BigInteger } from "big-integer";
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import { MC, MRX_DECIMALS, BIG_0, ADDRESS_SYNTAX } from "../mc";
@@ -14,7 +13,7 @@ import { commonStyles, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatSt
 import { MRC20Token } from "../MRC20";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
 import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI } from "../mc";
-import { ConfirmSendViewSerializableProps } from "./ConfirmSendView.js";
+import { ConfirmSendViewSerializableProps } from "./ConfirmSendView";
 
 
 
@@ -188,8 +187,8 @@ export function SendView(props : SendViewProps) : JSX.Element
             setErrorMessage(AMOUNT_OVERDECIMALIZED_ERROR);
             return;
             }
-        const amountToSend : BigInteger = toBigInteger(amountToSendStr);
-        if (amountToSend.lesserOrEquals(BIG_0))
+        const amountToSend : bigint = BigInt(amountToSendStr);
+        if (amountToSend <= BIG_0)
             {
             setErrorMessage(AMOUNT_TOO_SMALL_ERROR);
             return;
@@ -333,12 +332,12 @@ export function SendView(props : SendViewProps) : JSX.Element
         {
         if (tokenDDValue == "")
             {
-            if (am.current.wm.balanceSat.greaterOrEquals(BIG_0)) return formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX";
+            if (am.current.wm.balanceSat >= BIG_0) return formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX";
             }
         else
             {
             const tk : MRC20Token = am.current.tkm.findToken(tokenDDValue)!;
-            if (tk.balanceSat.greaterOrEquals(BIG_0)) return formatSatoshi(tk.balanceSat, tk.decimals) + " " + tk.symbol;
+            if (tk.balanceSat >= BIG_0) return formatSatoshi(tk.balanceSat, tk.decimals) + " " + tk.symbol;
             }
         return LOADING_STR;
         }
@@ -454,7 +453,7 @@ export function SendView(props : SendViewProps) : JSX.Element
             }
         }
 
-    function ToAddressTextInput() : JSX.Element
+    function renderToAddressTextInput() : JSX.Element
         {
         if (showQRButton)
             return (<SimpleTextInput label="To Address or MNS Name:" value={ toAddr } onChangeText={ onChangeToAddr } onEndEditing={ onEndEditingToAddr } onFocus={ clearError } icon="qrcode" onPressIcon={ onQRScanPressed }/>);
@@ -501,7 +500,7 @@ export function SendView(props : SendViewProps) : JSX.Element
                 <View style={{ height: 24 }} />
                 <SimpleTextInput label="Amount:" keyboardType="numeric" value={ amountStr } onChangeText={ onChangeAmount } onFocus={ clearError }/>
                 <View style={{ height: 24 }} />
-                <ToAddressTextInput/>
+                { renderToAddressTextInput() }
                 <View style={{ height: 24 }} />
                 <FeeOrGas/>
                 <View style={{ height: 24 }} />

@@ -6,7 +6,7 @@ import { ItemType } from 'react-native-dropdown-picker';
 
 import { MC, BIG_0 } from "./mc";
 import { Account, AccountStorageObj } from "./Account";
-import { MRC20Token } from './MRC20.js';
+import { MRC20Token } from './MRC20';
 
 
 
@@ -376,7 +376,7 @@ export class AccountManager
                         }
                     if (okToNotify())
                         {
-                        if (!this.current.wm.balanceSatDelta.equals(BIG_0) || !this.current.wm.unconfirmedBalanceSatDelta.equals(BIG_0))
+                        if (!(this.current.wm.balanceSatDelta == BIG_0) || !(this.current.wm.unconfirmedBalanceSatDelta == BIG_0))
                             for (const onBalanceChange of this.balanceNotifications.values()) onBalanceChange();
                         if (this.pollAll || this.txLogNotifications.size)
                             {

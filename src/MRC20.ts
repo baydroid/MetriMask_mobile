@@ -1,7 +1,5 @@
 import '../shimWrapper.js';
 
-import toBigInteger, { BigInteger } from "big-integer";
-
 import { MC, BIG_0 } from "./mc";
 import { WalletManager } from "./WalletManager";
 
@@ -73,7 +71,7 @@ export class MRC20Manager
 
     public createCandidateToken(wm : WalletManager, address : string) : Promise<MRC20Token>
         {
-        const existingToken = this.tkByAddr.get(address);
+        const existingToken = this.findToken(address);
         if (existingToken)
             return new Promise<MRC20Token>((resolve : (token : MRC20Token) => any, reject : (e : any) => any) =>
                 {
@@ -93,7 +91,7 @@ export class MRC20Manager
 
     public addCandidateToken(token : MRC20Token) : void
         {
-        const existingToken = this.tkByAddr.get(token.address);
+        const existingToken = this.findToken(token.address);
         if (existingToken)
             {
             if (existingToken.updateInfo(token)) this.issueNotifications(() : boolean => true);
@@ -103,7 +101,7 @@ export class MRC20Manager
             this.tkListChangeCount++;
             this.tkArray.push(token);
             this.tkArray.sort((a : MRC20Token, b : MRC20Token) : number => a.compareTo(b));
-            this.tkByAddr.set(token.address, token);
+            this.tkByAddr.set(MC.canonicalizeEvmAddress(token.address)!, token);
             MC.getMC().storage.accountManager.saveSelf();
             this.issueNotifications(() : boolean => true);
             }
@@ -111,20 +109,21 @@ export class MRC20Manager
 
     public findToken(address : string) : MRC20Token | null
         {
-        const tk = this.tkByAddr.get(address);
+        const tk = this.tkByAddr.get(MC.canonicalizeEvmAddress(address)!);
         return tk ? tk : null;
         }
 
     public removeToken(address : string) : void
         {
-        const tk : MRC20Token | undefined = this.tkByAddr.get(address);
+        const addr : string = MC.canonicalizeEvmAddress(address)!;
+        const tk : MRC20Token | undefined = this.tkByAddr.get(addr);
         if (tk)
             {
-            this.tkByAddr.delete(address);
+            this.tkByAddr.delete(addr);
             this.notifyingTkCount -= tk.notificationCount;
             this.tkListChangeCount++;
             const newTkArray : MRC20Token[] = [ ];
-            for (const tk of this.tkArray) if (tk.address != address) newTkArray.push(tk);
+            for (const tk of this.tkArray) if (MC.canonicalizeEvmAddress(tk.address) != addr) newTkArray.push(tk);
             this.tkArray = newTkArray;
             this.issueNotifications(() : boolean => true);
             }
@@ -194,7 +193,7 @@ export class MRC20Manager
             {
             const token = MRC20Token.fromSerializable(sobj);
             this.tkArray.push(token);
-            this.tkByAddr.set(token.address, token);
+            this.tkByAddr.set(MC.canonicalizeEvmAddress(token.address)!, token);
             }
         this.tkArray.sort((a : MRC20Token, b : MRC20Token) : number => a.compareTo(b));
         }
@@ -224,7 +223,7 @@ export class MRC20Token
     private tkName : string = "";
     private tkSymbol : string = "";
     private tkDecimals : number = -1; // -1 here means we haven't yet called the contract to get the token name, balance, etc.
-    private tkBalanceSat : BigInteger = BIG_0;
+    private tkBalanceSat : bigint = BIG_0;
     private notifications : Map<number, (tk : MRC20Token) => any> = new Map<number, (tk : MRC20Token) => any>();
 
     public constructor(address : string)
@@ -252,13 +251,13 @@ export class MRC20Token
         return so;
         }
 
-    public get infoIsValid()       : boolean    { return this.tkDecimals >= 0;    }
-    public get address()           : string     { return this.tkAddress;          }
-    public get name()              : string     { return this.tkName;             }
-    public get symbol()            : string     { return this.tkSymbol;           }
-    public get decimals()          : number     { return this.tkDecimals;         }
-    public get balanceSat()        : BigInteger { return this.tkBalanceSat;       }
-    public get notificationCount() : number     { return this.notifications.size; }
+    public get infoIsValid()       : boolean { return this.tkDecimals >= 0;    }
+    public get address()           : string  { return this.tkAddress;          }
+    public get name()              : string  { return this.tkName;             }
+    public get symbol()            : string  { return this.tkSymbol;           }
+    public get decimals()          : number  { return this.tkDecimals;         }
+    public get balanceSat()        : bigint  { return this.tkBalanceSat;       }
+    public get notificationCount() : number  { return this.notifications.size; }
 
     public compareTo(other : MRC20Token) : number
         {
@@ -298,7 +297,7 @@ export class MRC20Token
         this.tkName = other.tkName;
         this.tkSymbol = other.tkSymbol;
         this.tkDecimals = other.tkDecimals;
-        if (other.balanceSat.greaterOrEquals(BIG_0) && !other.balanceSat.equals(this.balanceSat))
+        if (other.balanceSat >= BIG_0 && !(other.balanceSat == this.balanceSat))
             {
             this.tkBalanceSat = other.tkBalanceSat;
             this.issueNotifications(() : boolean => true);
@@ -315,8 +314,8 @@ export class MRC20Token
         this.tkDecimals = so.decimals;
         if (so.balanceSat)
             {
-            const newBalance = toBigInteger(so.balanceSat);
-            if (newBalance.greaterOrEquals(BIG_0) && !newBalance.equals(this.tkBalanceSat))
+            const newBalance : bigint = BigInt(so.balanceSat);
+            if (newBalance >= BIG_0 && !(newBalance == this.tkBalanceSat))
                 {
                 this.tkBalanceSat = newBalance;
                 return true;
@@ -327,7 +326,7 @@ export class MRC20Token
 
     public loadInfo(wm : WalletManager) : Promise<boolean>
         {
-        return (new Promise<boolean>((resolve : (wasChanged : boolean) => any, reject : (e : string) => any) =>
+        return new Promise<boolean>((resolve : (wasChanged : boolean) => any, reject : (e : string) => any) =>
             {
             wm.getMRC20Info(this.tkAddress).then((so : SerializableMRC20Token) : void =>
                 {
@@ -341,7 +340,7 @@ export class MRC20Token
                 this.tkBalanceSat = BIG_0;
                 reject(`Failed to load.`);
                 });
-            }));
+            });
         }
 
     public refreshBalance(wm : WalletManager, okToNotify : () => boolean) : Promise<boolean>
@@ -350,8 +349,8 @@ export class MRC20Token
             {
             wm.getMRC20Balance(this.tkAddress).then((balanceStr : string) : void =>
                 {
-                const newBalance = toBigInteger(balanceStr);
-                if (!newBalance.equals(this.tkBalanceSat))
+                const newBalance : bigint = BigInt(balanceStr);
+                if (!(newBalance == this.tkBalanceSat))
                     {
                     this.tkBalanceSat = newBalance;
                     this.issueNotifications(okToNotify);

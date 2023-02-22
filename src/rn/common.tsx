@@ -1,13 +1,13 @@
 import "../../shimWrapper.js";
 
-import { BigInteger } from "big-integer";
-
 import React from "react";
 import { View, Text, Alert, Platform, BackHandler, StyleSheet, NativeSyntheticEvent, TextInputEndEditingEventData, TextInput } from "react-native";
 import { TextInput as PaperTextInput, Button as PaperButton, IconButton, TouchableRipple } from "react-native-paper";
+import { ItemType } from "react-native-dropdown-picker";
 
 import { BIG_0 } from "../mc";
-import { Account } from "../Account.js";
+import { Account } from "../Account";
+import { NetInfo, NetInfoManager, NET_ID, nim } from "../NetInfo";
 
 
 
@@ -131,15 +131,9 @@ export const NO_INFO_STR = "< Failed to Load >";
     
 
 
-export type NavigationViewProps =
-    {
-    route      : { params : any; };
-    navigation : any;
-    };
-
 export function normalizeProps(props : any) : any
     {
-    return  (props.route && props.route.params && (typeof props.route.params === "object")) ? props.route.params : props;
+    return (props.route && props.route.params && (typeof props.route.params === "object")) ? props.route.params : props;
     }
 
 
@@ -178,6 +172,20 @@ function backHandler(showExitOption : boolean) : () => void
         }
     else
         return () : void => { ; };
+    }
+
+
+
+export function netInfoDropDownItems() : ItemType<number>[]
+    {
+    const niman : NetInfoManager = nim();
+    const items : ItemType<number>[] = [ ];
+    for (let i = 0; i < NET_ID.length; i++)
+        {
+        const ni : NetInfo = niman.fromId(i);
+        items.push({ label: ni.name, value: ni.id } );
+        }
+    return items;
     }
 
 
@@ -520,7 +528,7 @@ const CC_1   = "1".charCodeAt(0);
 const CC_9   = "9".charCodeAt(0);
 const CC_DOT = ".".charCodeAt(0);
     
-export function formatSatoshi(n : BigInteger | number | string, decimals : number) : string
+export function formatSatoshi(n : bigint | number | string, decimals : number) : string
     {
     switch (typeof n)
         {
@@ -540,12 +548,12 @@ export function formatSmallSatoshi(n : number, decimals : number) : string
         return `0.0`;
     }
 
-export function formatBigSatoshi(n : BigInteger, decimals : number) : string
+export function formatBigSatoshi(n : bigint, decimals : number) : string
     {
-    if (n.greater(BIG_0))
+    if (n > BIG_0)
         return formatStringSatoshi(n.toString(), decimals);
-    else if (n.lesser(BIG_0))
-        return `-` + formatStringSatoshi(n.negate().toString(), decimals);
+    else if (n < BIG_0)
+        return `-` + formatStringSatoshi((-n).toString(), decimals);
     else
         return `0.0`;
     }

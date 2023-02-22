@@ -1,6 +1,5 @@
 import '../shimWrapper.js';
 
-import toBigInteger, { BigInteger } from "big-integer";
 import { Insight } from "metrixjs-wallet";
 
 import { WalletManager } from "./WalletManager";
@@ -249,7 +248,7 @@ export class TransactionInfo
     private txId : string;
     private txConfirmations : number;
     private txBlockheight : number;
-    private txValueSat : BigInteger;
+    private txValueSat : bigint;
     private txEpochTime : number;
     private txDateTimeStr : string;
 
@@ -264,7 +263,7 @@ export class TransactionInfo
         this.txDateTimeStr = when.toLocaleDateString() + " " + when.toLocaleTimeString(undefined, { hour12: false });
         }
 
-    private extractValue(rti : Insight.IRawTransactionInfo, ownAddr : string) : BigInteger
+    private extractValue(rti : Insight.IRawTransactionInfo, ownAddr : string) : bigint
         {
         function vinContainsAddr(vin : Insight.IVin[], address : string) : boolean
             {
@@ -280,15 +279,15 @@ export class TransactionInfo
             return false;
             }
 
-        let value : BigInteger = BIG_0;
+        let value : bigint = BIG_0;
         if (vinContainsAddr(rti.vin, ownAddr))
             {
-            for (const vout of rti.vout) if (!voutContainsAddr(vout, ownAddr)) value = value.add(toBigInteger(vout.value));
-            value = value.negate();
+            for (const vout of rti.vout) if (!voutContainsAddr(vout, ownAddr)) value = value + BigInt(vout.value);
+            value = -value;
             }
         else
             {
-            for (const vout of rti.vout) if (voutContainsAddr(vout, ownAddr)) value = value.add(toBigInteger(vout.value));
+            for (const vout of rti.vout) if (voutContainsAddr(vout, ownAddr)) value = value + BigInt(vout.value);
             }
         return value;
         }
@@ -306,10 +305,10 @@ export class TransactionInfo
             return txidComp;
         }
 
-    public get id()            : string     { return this.txId;           }
-    public get confirmations() : number     { return this.txConfirmations }
-    public get blockheight()   : number     { return this.txBlockheight;  }
-    public get valueSat()      : BigInteger { return this.txValueSat;     }
-    public get epochTime()     : number     { return this.txEpochTime;    }
-    public get dateTimeStr()   : string     { return this.txDateTimeStr;  }
+    public get id()            : string { return this.txId;           }
+    public get confirmations() : number { return this.txConfirmations }
+    public get blockheight()   : number { return this.txBlockheight;  }
+    public get valueSat()      : bigint { return this.txValueSat;     }
+    public get epochTime()     : number { return this.txEpochTime;    }
+    public get dateTimeStr()   : string { return this.txDateTimeStr;  }
     }

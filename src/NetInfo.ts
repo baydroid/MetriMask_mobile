@@ -1,19 +1,19 @@
-import { ethers } from "ethers";
+import ethers from "ethers";
 import { Network, networks } from "metrixjs-wallet";
 import { MNS, Name, getMNSAddress, DefaultReverseResolver, getMNSContract, BaseResolver } from '@metrixnames/mnslib';
 import ABI from '@metrixnames/mnslib/lib/abi';
 import { APIProvider, NetworkType, Provider, MetrixContract } from '@metrixcoin/metrilib';
 import bs58 from "bs58";
 import { decode, encode } from 'base-64';
-import { ItemType } from "react-native-dropdown-picker";
 
-import { MC } from "./mc";
+import { ADDRESS_SYNTAX, MC } from "./mc";
 
 if (!global.btoa) global.btoa = encode;
 if (!global.atob) global.atob = decode;
-if (typeof BigInt === 'undefined') global.BigInt = require('big-integer');
 
 
+
+const ZERO_ADDRESS : string = "0x0000000000000000000000000000000000000000";
 
 export enum NET_ID
     {
@@ -22,30 +22,36 @@ export enum NET_ID
     length = 2
     };
 
-
-
 export class NetInfo
     {
     protected ownId : number;
     protected ownName : string;
-    protected ownTxUrlHeader : string;
-    protected ownTokenUrlHeader : string;
+    protected txUrlHeader : string;
+    protected tokenUrlHeader : string;
     protected hostNetwork : Network;
 
-    public constructor(name : string, id : number, ownTxUrlHeader : string, ownTokenUrlHeader : string, network : Network)
+    public constructor(name : string, id : number, txUrlHeader : string, tokenUrlHeader : string, network : Network)
         {
         this.ownName = name;
         this.ownId = id;
-        this.ownTxUrlHeader = ownTxUrlHeader;
-        this.ownTokenUrlHeader = ownTokenUrlHeader;
+        this.txUrlHeader = txUrlHeader;
+        this.tokenUrlHeader = tokenUrlHeader;
         this.hostNetwork = network;
         }
 
-    public get name()           : string  { return this.ownName;           }
-    public get id()             : number  { return this.ownId;             }
-    public get txUrlHeader()    : string  { return this.ownTxUrlHeader;    }
-    public get tokenUrlHeader() : string  { return this.ownTokenUrlHeader; }
-    public get network()        : Network { return this.hostNetwork;       }
+    public get name()    : string  { return this.ownName;     }
+    public get id()      : number  { return this.ownId;       }
+    public get network() : Network { return this.hostNetwork; }
+
+    public toTxUrl(txId : string) : string
+        {
+        return `${ this.txUrlHeader }${ txId }`;
+        }
+
+    public toTokenUrl(contractAddress : string) : string
+        {
+        return `${ this.tokenUrlHeader }${ MC.canonicalizeEvmAddress(contractAddress) }`;
+        }
 
     public mnsResolveEvm(mnsName : string) : Promise<string>
         {
@@ -111,7 +117,7 @@ export class NetInfoWithMns extends NetInfo
         return new Promise<string>((resolve : (address : string) => any, reject : (e : any) => any) : void =>
             {
             const name : Name = this.mns.name(mnsName);
-            this.mnsContract.call(`recordExists(bytes32)`, [ name.hash ]).then((result : any) : void =>
+            this.mnsContract.call(`recordExists(bytes32)`, [ name.hash ]).then((result? : ethers.Result) : void =>
                 {
                 if (result && result.toString() === `true`)
                     name.getAddress('MRX').then(resolve).catch(reject);
@@ -147,7 +153,7 @@ export class NetInfoWithMns extends NetInfo
                         return new Promise<string>((resolve : (data : string) => any, reject : (e : any) => any) =>
                             {
                             this.call('addr(bytes32)', [ node ])
-                                .then((result? : ethers.utils.Result) : void => resolve(result ? result.toString() : ``))
+                                .then((result? : ethers.Result) : void => resolve(result ? result.toString() : ``))
                                 .catch((e : any) : void => resolve(``));
                             });
                         }
@@ -165,7 +171,7 @@ export class NetInfoWithMns extends NetInfo
 
             name.getResolverAddr().then((address : string) : void =>
                 {
-                if (resolverAddr != ethers.constants.AddressZero)
+                if (address != ZERO_ADDRESS)
                     {
                     resolverAddr = address;
                     part2();
@@ -174,7 +180,7 @@ export class NetInfoWithMns extends NetInfo
                     resolve(``);
                 })
             .catch((e : any) : void => resolve(``));
-            this.mnsContract.call('recordExists(bytes32)', [ name.hash, ]).then((result? : ethers.utils.Result) : void =>
+            this.mnsContract.call('recordExists(bytes32)', [ name.hash ]).then((result? : ethers.Result) : void =>
                 {
                 if (result && result.toString() === `true`)
                     part2();
@@ -187,9 +193,10 @@ export class NetInfoWithMns extends NetInfo
 
     public mnsReverseResolveAddr(address : string) : Promise<string>
         {
+        if (MC.anaylizeAddressSyntax(address) == ADDRESS_SYNTAX.MRX) address = this.toHexAddress(address);
+        const reverseInput : string = `${ MC.canonicalizeEvmAddress(address) }.addr.reverse`;
         return new Promise<string>((resolve : (label : string) => any, reject : (e : any) => any) : void =>
             {
-            const reverseInput : string = `${ (address.startsWith(`0x`) ? address.substring(2) : this.toHexAddress(address)).toLowerCase() }.addr.reverse`;
             const reverseName : Name = this.mns.name(reverseInput, this.reverseResolver.address);
             this.reverseResolver.name(reverseName.hash).then(resolve).catch(reject);
             });
@@ -232,16 +239,7 @@ export class NetInfoManager
         if (!ni) MC.raiseError(`NetInfoManager unknown network name ${ name }`, "NetInfoManager fromName()");
         return ni!;
         }
-
-    public get netInfoDropDownItems() : ItemType<number>[]
-        {
-        const items : ItemType<number>[] = [ ];
-        for (const ni of this.infoArray.values()) items.push({ label: ni.name, value: ni.id } );
-        return items;
-        }
     }
-
-
 
 const manager = new NetInfoManager();
 

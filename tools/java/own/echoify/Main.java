@@ -18,8 +18,8 @@ import java.io.Writer;
         *******************************************************************
         ******************************************************************/
 
-// Change PROJECT_FOLDER to be the location of your MetriMask_mobile project folder.
-// Then run Main to generate install_modules.sh and  install_modules.bat from tools/install_modules_raw.sh.
+// Change the String constant PROJECT_FOLDER to be the location of your MetriMask_mobile project folder.
+// Then run Main to generate install_modules.sh and install_modules.bat from tools/install_modules_raw.sh.
 
 
 

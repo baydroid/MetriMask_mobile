@@ -1,11 +1,15 @@
 echo ""
 echo "################################################################################################"
+echo "npm install --save-dev @babel/plugin-proposal-private-methods"
+npm install --save-dev @babel/plugin-proposal-private-methods
+echo ""
+echo "################################################################################################"
 echo "npm install --save assert"
 npm install --save assert
 echo ""
 echo "################################################################################################"
-echo "npm install --save big-integer"
-npm install --save big-integer
+echo "npm install --save ethers"
+npm install --save ethers
 echo ""
 echo "################################################################################################"
 echo "npm install --save idna-uts46"
@@ -62,10 +66,6 @@ echo ""
 echo "################################################################################################"
 echo "npm install --save-dev @types/base-64"
 npm install --save-dev @types/base-64
-echo ""
-echo "################################################################################################"
-echo "npm install --save assert"
-npm install --save assert
 echo ""
 echo "################################################################################################"
 echo "npm install --save scryptsy"
