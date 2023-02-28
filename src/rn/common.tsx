@@ -523,10 +523,11 @@ export function MenuOption(props : MenuOptionProps) : JSX.Element
 
 
 
-const CC_0   = "0".charCodeAt(0);
-const CC_1   = "1".charCodeAt(0);
-const CC_9   = "9".charCodeAt(0);
-const CC_DOT = ".".charCodeAt(0);
+const CC_0     = "0".charCodeAt(0);
+const CC_1     = "1".charCodeAt(0);
+const CC_9     = "9".charCodeAt(0);
+const CC_DOT   = ".".charCodeAt(0);
+const CC_COMMA = ",".charCodeAt(0);
     
 export function formatSatoshi(n : bigint | number | string, decimals : number) : string
     {
@@ -541,9 +542,9 @@ export function formatSatoshi(n : bigint | number | string, decimals : number) :
 export function formatSmallSatoshi(n : number, decimals : number) : string
     {
     if (n > 0)
-        return formatStringSatoshi(n.toString(), decimals);
+        return formatStringSatoshi(Math.round(n).toString(), decimals);
     else if (n < 0)
-        return `-` + formatStringSatoshi((-n).toString(), decimals);
+        return `-` + formatStringSatoshi(Math.round(-n).toString(), decimals);
     else
         return `0.0`;
     }
@@ -578,7 +579,11 @@ export function formatStringSatoshi(satStr : string, decimals : number) : string
         }
     let len = satStr.length - 1;
     while (satStr.charCodeAt(len) == CC_0) len--;
-    if (satStr.charCodeAt(len) == CC_DOT) len++;
+    if (satStr.charCodeAt(len) == CC_DOT)
+        {
+        satStr += "0";
+        len++;
+        }
     satStr = negative ? `-` + satStr.substring(0, len + 1) : satStr.substring(0, len + 1);
     if (decimals == 0 && satStr.charAt(satStr.length - 2) == ".") satStr = satStr.substring(0, satStr.length - 2);
     return satStr;
@@ -594,7 +599,8 @@ export function noumberOfDecimals(floatStr : string) : number
         i++;
         }
     if (i >= floatStr.length) return 0;
-    if (floatStr.charCodeAt(i) != CC_DOT) return -1;
+    const cc : number = floatStr.charCodeAt(i);
+    if (cc != CC_DOT && cc != CC_COMMA) return -1;
     i++;
     let start : number = i;
     while (i < floatStr.length)
@@ -613,7 +619,7 @@ export function validateAndSatoshizeFloatStr(floatStr : string, decimals : numbe
     for (let i = 0; i < len; i++)
         {
         const cc = floatStr.charCodeAt(i);
-        if (cc == CC_DOT)
+        if (cc == CC_DOT || cc == CC_COMMA)
             {
             if (dotIndex >= 0)
                 return "";
