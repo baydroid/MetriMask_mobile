@@ -91,7 +91,7 @@ export function parseBrowserUrl(s : string) : string
     {
     let url : string = s.toLowerCase();
     if (url.startsWith("about:")) return s;
-    if (url.startsWith("http://")) return "https://" + s.substring(7);
+    if (url.startsWith("http://")) return s;
     if (url.startsWith("https://")) return s;
     if (url.startsWith("file://")) return s;
     if (isUnschemedUrl(url)) return "https://" + url;

@@ -78,7 +78,7 @@ export type MainViewAPI =
     {
     goToBrowser                    : () => void;
     logout                         : () => void;
-    emergencyExit                  : (msg : string) => void;
+    emergencyExit                  : (msgs : string[]) => void;
     askPermissionToSign            : (requestingURL : string, askingEntitySelfDescription : string, messageToSign : string, onSigningPermittedDecision : (permittedToSign : boolean) => any) => void;
     askPermissionToSend            : (requestingURL : string, params : ContractCallParams, onSendingPermittedDecision : (permittedToSend : boolean, amountSat : string, gasLimit : number, gasPrice : number) => any) => void;
     showWalletWorking              : (workFunction : () => WorkFunctionResult, whatWorksGoingOn? : string) => void;
@@ -91,7 +91,7 @@ export type MainViewAPI =
 
 const RootDrawerNavigator = createDrawerNavigator();
 let isInitializing : boolean = true;
-let emeergencyExitMsg : string = "No information available.";
+let emergencyExitMsgs : string[] = [ "No information available." ];
 let nextPermissionToSignViewProps : PermissionToSignViewProps;
 let nextPermissionToSendViewProps : PermissionToSendViewProps;
 let nextOnSigningPermittedDecision : (permittedToSign : boolean) => any;
@@ -215,9 +215,9 @@ export default function MainView() : JSX.Element
         walletNavigate(WALLET_SCREENS.CREATE_ACCOUNT);
         }
 
-    function emergencyExit(msg : string) : void
+    function emergencyExit(msgs : string[]) : void
         {
-        emeergencyExitMsg = msg;
+        emergencyExitMsgs = msgs;
         rootNavigation.navigate(ROOT_SCREENS.EMERGENCY_EXIT);
         }
 
@@ -373,6 +373,15 @@ export default function MainView() : JSX.Element
         {
         rootNavigation = useNavigation<StackNavigationProp<any>>();
         useEffect(handleHardwareBackPressNoExit);
+        if (emergencyExitMsgs.length == 0) emergencyExitMsgs.push("No information available.");
+
+        function renderMessages() : JSX.Element[]
+            {
+            let elems : JSX.Element[] = Array(emergencyExitMsgs.length);
+            for (const msg of emergencyExitMsgs) elems.push(<Text style={{ color: COLOR_BLACK }}>{ msg }</Text>);
+            return elems;
+            }
+
         return (
             <SafeAreaView>
                 <View style={ mainStyles.screenHolder }>
@@ -385,7 +394,7 @@ export default function MainView() : JSX.Element
                         <Text style={{ color: COLOR_BLACK }}>We apologize for the inconvenience. The following information is available about what went wrong:</Text>
                         <View style={{ height: 24 }}/>
                         <View style={{ backgroundColor: COLOR_GREEN_WASH, padding: 6 }}>
-                            <Text style={{ color: COLOR_BLACK }}>{ emeergencyExitMsg }</Text>
+                            { renderMessages() }
                         </View>
                     </View>
                 </View>

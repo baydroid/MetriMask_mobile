@@ -154,7 +154,127 @@ With the current version of FlatList.js the start of the constructor should now 
 
 #### SUBSEQUENT STEPS FOR IOS
 
+
+
 #### STEP 9i)
+
+Edit node_modules/metrixjs-wallet/node_modules/bitcoinjs-lib/src/hdnode.js. Find function HDNode's definition (currently at line 15):
+
+    function HDNode (keyPair, chainCode) {
+      typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
+
+      if (!keyPair.compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
+
+      this.keyPair = keyPair
+      this.chainCode = chainCode
+      this.depth = 0
+      this.index = 0
+      this.parentFingerprint = 0x00000000
+    }
+
+Change it by commenting out the typeforce line, so it looks like this:
+
+    function HDNode (keyPair, chainCode) {
+      //typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
+
+      if (!keyPair.compressed) throw new TypeError('BIP32 only allows compressed keyPairs')
+
+      this.keyPair = keyPair
+      this.chainCode = chainCode
+      this.depth = 0
+      this.index = 0
+      this.parentFingerprint = 0x00000000
+    }
+
+#### STEP 10i)
+
+Edit node_modules/metrixjs-wallet/node_modules/bitcoinjs-lib/src/ecdsa.js. Find function sign's definition (currently at line 77):
+
+    function sign (hash, d) {
+      typeforce(types.tuple(types.Hash256bit, types.BigInt), arguments)
+
+      var x = d.toBuffer(32)
+      var e = BigInteger.fromBuffer(hash)
+      var n = secp256k1.n
+      var G = secp256k1.G
+
+      var r, s
+      deterministicGenerateK(hash, x, function (k) {
+        var Q = G.multiply(k)
+
+        if (secp256k1.isInfinity(Q)) return false
+
+        r = Q.affineX.mod(n)
+        if (r.signum() === 0) return false
+
+        s = k.modInverse(n).multiply(e.add(d.multiply(r))).mod(n)
+        if (s.signum() === 0) return false
+
+        return true
+      })
+
+      // enforce low S values, see bip62: 'low s values in signatures'
+      if (s.compareTo(N_OVER_TWO) > 0) {
+        s = n.subtract(s)
+      }
+
+      return new ECSignature(r, s)
+    }
+
+Change it by commenting out the typeforce line, so it looks like this:
+
+    function sign (hash, d) {
+      //typeforce(types.tuple(types.Hash256bit, types.BigInt), arguments)
+
+      var x = d.toBuffer(32)
+      var e = BigInteger.fromBuffer(hash)
+      var n = secp256k1.n
+      var G = secp256k1.G
+
+      var r, s
+      deterministicGenerateK(hash, x, function (k) {
+        var Q = G.multiply(k)
+
+        if (secp256k1.isInfinity(Q)) return false
+
+        r = Q.affineX.mod(n)
+        if (r.signum() === 0) return false
+
+        s = k.modInverse(n).multiply(e.add(d.multiply(r))).mod(n)
+        if (s.signum() === 0) return false
+
+        return true
+      })
+
+      // enforce low S values, see bip62: 'low s values in signatures'
+      if (s.compareTo(N_OVER_TWO) > 0) {
+        s = n.subtract(s)
+      }
+
+      return new ECSignature(r, s)
+    }
+
+#### STEP 11i)
+
+Edit node_modules/metrixjs-wallet/node_modules/bitcoinjs-lib/src/ecsignature.js. Find function ECSignature's definition (currently at line 7):
+
+    function ECSignature (r, s) {
+      typeforce(types.tuple(types.BigInt, types.BigInt), arguments)
+
+      this.r = r
+      this.s = s
+    }
+
+Change it by commenting out the typeforce line, so it looks like this:
+
+    function ECSignature (r, s) {
+      //typeforce(types.tuple(types.BigInt, types.BigInt), arguments)
+
+      this.r = r
+      this.s = s
+    }
+
+#### STEP 12i)
 
 The pod install command won't work unless the project's a git repository. So, if it's not already a git repo then make it so. For example, with these commands
 
@@ -162,7 +282,7 @@ The pod install command won't work unless the project's a git repository. So, if
     git add --all
     git commit -m "initial commit"
 
-#### STEP 10i)
+#### STEP 13i)
 
 Following the instructions here
 
@@ -184,7 +304,7 @@ to the target 'MetriMask_mobile' do ... end section, like so
 
     end
 
-#### STEP 11i)
+#### STEP 14i)
 
 Run pod install in the ios directory.
 
@@ -192,13 +312,13 @@ Run pod install in the ios directory.
     pod install
     cd ..
 
-#### STEP 12i)
+#### STEP 15i)
 
 Add the Ios icons by copying the contents of Images.xcassets to ios/MetriMask_mobile/Images.xcassets, overwriting Contents.json.
 
     cp -r Images.xcassets/* ios/MetriMask_mobile/Images.xcassets
 
-#### STEP 13i)
+#### STEP 16i)
 
 Edit ios/MetriMask_mobile/Info.plist, add the following 3 key value pairs to it in the dict section.
 
@@ -268,7 +388,7 @@ If there's an existing UIAppFonts section amalgamate the fonts from it and the U
     </dict>
     </plist>
 
-#### STEP 14i)
+#### STEP 17i)
 
 Open the project in Xcode. To do this start Xcode, and select Open a project or file. Open the ios folder, do not open the file ios/MetriMask_mobile.xcodeproj. Wait until Xcode finishes analyzing the project before moving on.
 
@@ -294,13 +414,13 @@ Do the same for the react-native-udp pod.
 
 Note that Xcode may sneak these compile sources back in again if you change any project dependencies. If the build fails with a duplicate symbol linker error check to see if GCDAsyncSocket.m has come back, and, if so, remove it again.
 
-#### STEP 15i)
+#### STEP 18i)
 
 In a 2nd terminal window change to the project directory, and start Metro with this command
 
     npx react-native start --reset-cache
 
-#### STEP 16i)
+#### STEP 19i)
 
 From the terminal window not running Metro in the project directory build and run the debug version of the app with this command.
 
@@ -313,6 +433,8 @@ To build and run the release version instead use this command
 
 
 #### SUBSEQUENT STEPS FOR ANDROID
+
+
 
 #### STEP 9a)
 

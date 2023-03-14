@@ -52,6 +52,7 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
     private static theSingleInstance : MC | null = null;
     private static initStarted : boolean = false;
     private static nextUniqueInt : number = 1;
+    private static messageArray : string[] = [ "" ];
 
     private store = new MRXStorage();
     private allTabsAPI : BrowserAllTabsViewAPI | null = null;
@@ -275,19 +276,31 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
         return MC.nextUniqueInt++;
         }
 
+    public static logErrorMessage(message : string)
+        {
+        MC.messageArray.push(">" + Date.now().toString() + ": " + message);
+        }
+
     public static raiseError(e : any, extraInfo : string) : void
         {
         if (DEBUG_MODE)
             {
             console.log(`*****   START   MC.raiseError() >> ${ extraInfo }`);
+            console.log(MC.errorToString(e));
             console.log(e);
+            if (MC.messageArray.length > 1)
+                {
+                console.log(`*****   MESSAGES`);
+                for (const msg of MC.messageArray) if (msg.length > 0) console.log(msg);
+                }
             console.log(`*****   END   MC.raiseError()`);
             throw e;
             }
         else
             {
+            MC.messageArray[0] = MC.errorToString(e) + " >> " + extraInfo;
             if (MC.theSingleInstance && MC.theSingleInstance.mainViewAPI)
-                MC.theSingleInstance.mainViewAPI.emergencyExit(MC.errorToString(e));
+                MC.theSingleInstance.mainViewAPI.emergencyExit(MC.messageArray);
             else
                 throw e;
             }
