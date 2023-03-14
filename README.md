@@ -107,8 +107,6 @@ Follow the instructions here on editing babel.config.js to complete the installa
 
     https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation/
 
-The project does use proguard, so android/app/proguard-rules.pro must be edited, as well as babel.config.js.
-
 Also add the plugin @babel/plugin-proposal-private-methods to babel.config.js, with the loose option set to true. Be careful to make sure that react-native-reanimated/plugin comes last in the plugin array. Assuming there aren't any other plugins at the end of the editing babel.config.js should look something like this:
 
     module.exports = {
