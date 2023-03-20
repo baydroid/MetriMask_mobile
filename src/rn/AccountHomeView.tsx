@@ -381,7 +381,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 <DropDownPicker
                     dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
                     style={{ borderColor: COLOR_DARKISH_PURPLE }}
-                    maxHeight={ 400 }
+                    maxHeight={ 200 }
                     items={ accountDDItems }
                     open={ accountDDOpen }
                     value={ accountDDValue as string }
