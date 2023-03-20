@@ -170,7 +170,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                         onChangeText={ (txt : string) : void => setPassword(txt) }
                         onFocus={ clearErrorCondition }
                         rnRef={ securePasswordRef }
-                        secureTextEntry
+                        secureTextEntry={ true }
                         icon="eye"
                         onPressIcon={ () => setSecure(false) }/>
                     <View style={{ height: 24 }}/>
@@ -180,7 +180,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                         onChangeText={ (txt : string) : void => setConfirmPassword(txt) }
                         onFocus={ clearErrorCondition }
                         rnRef={ confirmPasswordRef }
-                        secureTextEntry
+                        secureTextEntry={ true }
                         icon="eye"
                         onPressIcon={ () => setSecure(false) }/>
                 </>
@@ -197,6 +197,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                         onChangeText={ (txt : string) : void => setPassword(txt) }
                         onFocus={ clearErrorCondition }
                         rnRef={ plainPasswordRef }
+                        secureTextEntry={ false }
                         icon="eye-off"
                         onPressIcon={ () => setSecure(true) }/>
                 </>

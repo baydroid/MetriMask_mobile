@@ -137,7 +137,7 @@ export class WalletManager
     public get ninfo()                      : NetInfo           { return this.ownNinfo;                       }
     public get hasWallet()                  : boolean           { return !!this.ownWallet;                    }
     public get wallet()                     : MRXWallet         { return this.ownWallet!;                     }
-    public get rpcProvider()                : WalletRPCProvider { return this.walletRpcProvider!              }
+    public get rpcProvider()                : WalletRPCProvider { return this.walletRpcProvider!;             }
     public get address()                    : string            { return this.walletAddress;                  }
     public get mnsNmae()                    : string            { return this.nnsNameByReversal;              }
     public get balanceSat()                 : bigint            { return this.lastBalanceSat;                 }
@@ -154,7 +154,7 @@ export class WalletManager
         {
         try
             {   
-            this.ownWallet = this.ownNinfo.network.fromMnemonic(mnemonic, passwordHash);
+            this.ownWallet = this.ownNinfo.network.fromMnemonic(mnemonic);
             this.loadWalletExtras();
             return this.ownWallet.toEncryptedPrivateKey(passwordHash, SCRYPT_PARAMS_PRIV_KEY);
             }

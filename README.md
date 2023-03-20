@@ -1,5 +1,7 @@
 # Build Guide
 
+
+
 Note that all pathnames are given relative to the project directory (apart from those in the Software versions used in this build guide section).
 
 You can find package.json and package-lock.json in the package_etc folder.
@@ -8,12 +10,14 @@ You can find package.json and package-lock.json in the package_etc folder.
 
 ### Software versions used in this build guide
 
+
+
 #### ANDROID
 
     System:
         OS: Linux 5.14 Fedora 33 (Workstation Edition) 33 (Workstation Edition)
         CPU: (32) x64 AMD Ryzen 9 3950X 16-Core Processor
-        Memory: 104.22 GB / 125.72 GB
+        Memory: 75.69 GB / 125.72 GB
         Shell: 5.0.17 - /bin/bash
     Binaries:
         Node: 16.13.2 - ~/.nvm/versions/node/v16.13.2/bin/node
@@ -38,9 +42,9 @@ For some reason npx react-native info couldn't find Android Studio, or the SDK, 
 #### iOS
 
     System:
-        OS: macOS 12.6
+        OS: macOS 13.2.1
         CPU: (8) arm64 Apple M1
-        Memory: 4.50 GB / 16.00 GB
+        Memory: 5.90 GB / 16.00 GB
         Shell: 5.8.1 - /bin/zsh
     Binaries:
         Node: 18.10.0 - /opt/homebrew/bin/node
@@ -51,8 +55,8 @@ For some reason npx react-native info couldn't find Android Studio, or the SDK, 
         CocoaPods: 1.11.3 - /Users/loma/.gem/ruby/2.7.0/bin/pod
     SDKs:
         iOS SDK:
-            Platforms: DriverKit 22.2, iOS 16.2, macOS 13.1, tvOS 16.1, watchOS 9.1
-         Android SDK: Not Found
+        Platforms: DriverKit 22.2, iOS 16.2, macOS 13.1, tvOS 16.1, watchOS 9.1
+        Android SDK: Not Found
     IDEs:
         Android Studio: Not Found
         Xcode: 14.2/14C18 - /usr/bin/xcodebuild
@@ -66,7 +70,11 @@ For some reason npx react-native info couldn't find Android Studio, or the SDK, 
     npmGlobalPackages:
         *react-native*: Not Found
 
+
+
 ### FIRST STEPS FOR BOTH iOS AND ANDROID
+
+
 
 #### STEP 1)
 

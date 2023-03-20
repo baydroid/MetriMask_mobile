@@ -129,7 +129,7 @@ export function LoginView(props : LoginViewProps) : JSX.Element
                     onChangeText={ setPasswordAndClearInvalid }
                     onEndEditing={ onEndEditintgPassword }
                     rnRef={ securePasswordRef }
-                    secureTextEntry
+                    secureTextEntry={ true }
                     icon="eye"
                     onPressIcon={ (): void => setSecure(false) }/>
                 );
@@ -144,6 +144,7 @@ export function LoginView(props : LoginViewProps) : JSX.Element
                     onChangeText={ setPasswordAndClearInvalid }
                     onEndEditing={ onEndEditintgPassword }
                     rnRef={ plainPasswordRef }
+                    secureTextEntry={ false }
                     icon="eye-off"
                     onPressIcon={ (): void => setSecure(true) }/>
                 );

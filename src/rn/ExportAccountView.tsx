@@ -102,9 +102,9 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
                     onChangeText={ setPasswordAndClearInvalid }
                     onEndEditing={ onEndEditintgPassword }
                     rnRef={ securePasswordRef }
+                    secureTextEntry={ true }
                     icon="eye"
-                    onPressIcon={ () : void => setSecure(false) }
-                    secureTextEntry/>
+                    onPressIcon={ () : void => setSecure(false) }/>
                 );
             }
         else
@@ -117,6 +117,7 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
                     onChangeText={ setPasswordAndClearInvalid }
                     onEndEditing={ onEndEditintgPassword }
                     rnRef={ plainPasswordRef }
+                    secureTextEntry={ false }
                     icon="eye-off"
                     onPressIcon={ () : void => setSecure(true) }/>
                 );
