@@ -10,8 +10,9 @@ npm install --save mweb3
 npm install --save metrixjs-wallet
 npm install --save bitcoinjs-message
 npm install --save bitcoinjs-lib@4.0.5
-npm install --save @metrixnames/mnslib
 npm install --save @metrixcoin/metrilib
+npm install --save @metrixnames/mnslib
+npm install --save @metrixnames/pricelib
 npm install --save bs58
 npm install --save base-64
 npm install --save-dev @types/base-64
@@ -53,4 +54,5 @@ npm install --save react-native-dropdown-picker
 npm install --save react-native-pager-view
 npm install --save react-native-tab-view
 npm install --save react-native-svg
-npm install --save github:baydroid/react-native-qrcode-svg
+npm install --save react-native-qrcode-svg
+npm install --save big-integer

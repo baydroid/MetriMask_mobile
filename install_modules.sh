@@ -48,12 +48,16 @@ echo "npm install --save bitcoinjs-lib@4.0.5"
 npm install --save bitcoinjs-lib@4.0.5
 echo ""
 echo "################################################################################################"
+echo "npm install --save @metrixcoin/metrilib"
+npm install --save @metrixcoin/metrilib
+echo ""
+echo "################################################################################################"
 echo "npm install --save @metrixnames/mnslib"
 npm install --save @metrixnames/mnslib
 echo ""
 echo "################################################################################################"
-echo "npm install --save @metrixcoin/metrilib"
-npm install --save @metrixcoin/metrilib
+echo "npm install --save @metrixnames/pricelib"
+npm install --save @metrixnames/pricelib
 echo ""
 echo "################################################################################################"
 echo "npm install --save bs58"
@@ -220,5 +224,9 @@ echo "npm install --save react-native-svg"
 npm install --save react-native-svg
 echo ""
 echo "################################################################################################"
-echo "npm install --save github:baydroid/react-native-qrcode-svg"
-npm install --save github:baydroid/react-native-qrcode-svg
+echo "npm install --save react-native-qrcode-svg"
+npm install --save react-native-qrcode-svg
+echo ""
+echo "################################################################################################"
+echo "npm install --save big-integer"
+npm install --save big-integer

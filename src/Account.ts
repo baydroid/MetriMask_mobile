@@ -5,7 +5,7 @@ import { nim } from "./NetInfo";
 import { WalletManager } from "./WalletManager";
 import { MRC20Manager, MRC20Token, SerializableMRC20Token } from "./MRC20";
 import { TransactionLog } from "./TransactionLog";
-import { Insight } from 'metrixjs-wallet';
+import { AccountManager } from './AccountManager';
 
 
 
@@ -24,6 +24,7 @@ export class Account
     private ownWm : WalletManager;
     private mrc20 : MRC20Manager = new MRC20Manager();
     private txl : TransactionLog = new TransactionLog();
+
 
     public static createFromMnemonic(name : string, currentNetId : number, mnemonic : string, passwordHash : string) : Account | null
         {
@@ -71,32 +72,30 @@ export class Account
         return { name: this.name, netId: this.wm.ninfo.id, encPrivKey: this.encPrivKey, tokens: this.mrc20.toStorageArray() };
         }
 
-    public finishLoad() : Promise<Insight.IGetInfo | null>
+    public finishLoad() : Promise<void>
         {
-        return new Promise<Insight.IGetInfo | null>((resolve : (info : Insight.IGetInfo | null) => any, reject : (e : any) => any) : void =>
+        return new Promise<void>((resolve : () => any, reject : (e : any) => any) : void =>
             {
-            const tokensPresent : boolean = this.tkm.tokenArray.length > 0;
-            let outCount : number = tokensPresent ? 3 : 2;
+            const am : AccountManager = MC.getMC().storage.accountManager;
+            let outCount : number = 1;
             let rejected : boolean = false;
-            let infoReported : Insight.IGetInfo | null = null;
 
-            function complete(e : any) : void
+            function complete() : void
+                {
+                if (!rejected && --outCount == 0) resolve();
+                }
+
+            function fail(e : any) : void
                 {
                 if (!rejected)
                     {
-                    if (e !== null)
-                        {
-                        rejected = true;
-                        reject(e);
-                        }
-                    else if (--outCount == 0)
-                        resolve(infoReported);
+                    rejected = true;
+                    reject(e);
                     }
                 }
 
-            this.ownWm.loadInfoAndMns().then((info : Insight.IGetInfo | null) : void => { infoReported = info; complete(null); }).catch(complete);
-            if (tokensPresent) this.tkm.refreshAllTokenBalances(this.ownWm, () : boolean => false).then((anyBalanceChanged : boolean) : void => complete(null)).catch(complete);
-            this.txLog.extend(this.ownWm).then((canLoadMoreTxs : boolean) : void => complete(null)).catch(complete);
+            this.ownWm.reverseResolveMnsName().then(complete).catch(fail);
+            if (am.setOnPollingInitialized(complete)) outCount++;
             });
         }
 
@@ -138,7 +137,7 @@ export class Account
 
     private okToNotify() : boolean
         {
-        const am = MC.getMC().storage.accountManager;
+        const am : AccountManager = MC.getMC().storage.accountManager;
         return am.isLoggedIn && am.current == this;
         }
     }

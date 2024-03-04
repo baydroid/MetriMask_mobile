@@ -9,13 +9,14 @@ import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker
 import { TabView, TabBar, SceneMap, SceneRendererProps, NavigationState, } from 'react-native-tab-view';
 import { Scene } from "react-native-tab-view/lib/typescript/src/types.js";
 
-import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet, COLOR_BLACK, COLOR_DARKISH_PURPLE, COLOR_DARK_PURPLE, COLOR_LIGHT_GREY, COLOR_WHITE, COLOR_PURPLE_RIPPLE, COLOR_LIGHTISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
+import { commonStyles, formatSatoshi, TitleBar, SimpleDoublet, LOADING_STR, NO_INFO_STR, DoubleDoublet, SimpleButton, SimpleButtonPair, AddressQuasiDoublet, COLOR_BLACK, COLOR_DARKISH_PURPLE, COLOR_DARK_PURPLE, COLOR_LIGHT_GREY, COLOR_WHITE, COLOR_PURPLE_RIPPLE, COLOR_LIGHTISH_PURPLE, COLOR_MIDDLE_GREY, COLOR_RED } from "./common";
 import { BIG_0, MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { TransactionInfo } from "../TransactionLog";
 import { MRC20Token } from "../MRC20";
-import { Insight } from "metrixjs-wallet";
+import { USDPriceFinder } from "../USDPriceFinder";
+import { NET_ID } from "../NetInfo";
 
 
 
@@ -46,6 +47,7 @@ export type AccountHomeViewProps =
     showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
     };
 
+    const PRICE_FINDER               = USDPriceFinder.getFinder();
 
 
 enum TAB_INDEX
@@ -94,6 +96,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
     const [ accountDDItems, setAccountDDItems ] = useState<ItemType<string>[]>(am.accountDropDownItems);
 
     const [ balance, setBalance ] = useState<string>(formatBalance());
+    const [ balanceUSD, setBalanceUSD ] = useState<string>(formatBalanceUSD());
     const [ unconfirmedBalance, setUnconfirmedBalance ] = useState<string>(formatUnconfirmedBalance());
     const [ tabIndex, _setTabIndex ] = useState<TAB_INDEX>(TAB_INDEX.TRANSACTIONS);
     const [ disableMoreTxs, setDisableMoreTxs ] = useState<boolean>(false);
@@ -125,16 +128,6 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             }
         });
 
-    function formatBalance() : string
-        {
-        return am.current.wm.balanceSat >= BIG_0 ? formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) : LOADING_STR;
-        }
-
-    function formatUnconfirmedBalance() : string
-        {
-        return am.current.wm.unconfirmedBalanceSat >= BIG_0 ? formatSatoshi(am.current.wm.unconfirmedBalanceSat, MRX_DECIMALS) : LOADING_STR;
-        }
-
     function setTabIndex(index : TAB_INDEX) : void
         {
         if (tabIndex != TAB_INDEX.TOKENS && index == TAB_INDEX.TOKENS) tokenRefreshPending = true;
@@ -145,8 +138,25 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
         {
         const newBalanceStr = formatBalance();
         if (balance != newBalanceStr) setBalance(newBalanceStr);
+        const newBalanceUSDStr = formatBalanceUSD();
+        if (balanceUSD != newBalanceUSDStr) setBalanceUSD(newBalanceUSDStr);
         const newUnconfirmedStr = formatUnconfirmedBalance();
         if (unconfirmedBalance != newUnconfirmedStr) setUnconfirmedBalance(newUnconfirmedStr);
+        }
+
+    function formatBalance() : string
+        {
+        return am.current.wm.balanceSat >= BIG_0 ? formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) : LOADING_STR;
+        }
+
+    function formatBalanceUSD() : string
+        {
+        return am.current.wm.balanceUSD;
+        }
+
+    function formatUnconfirmedBalance() : string
+        {
+        return am.current.wm.unconfirmedBalanceSat >= BIG_0 ? formatSatoshi(am.current.wm.unconfirmedBalanceSat, MRX_DECIMALS) : LOADING_STR;
         }
 
     function updateTxs() : void
@@ -188,7 +198,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 props.showWorkingAsync((onWorkDone : (result : WorkFunctionResult) => void) : void =>
                     {
                     am.setCurrentAccount(item.value as string);
-                    am.current.finishLoad().then((info : Insight.IGetInfo | null) : void =>
+                    am.current.finishLoad().then(() : void =>
                         {
                         if (tabIndex == TAB_INDEX.TOKENS) tokenRefreshPending = true;
                         onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_HOME });
@@ -264,13 +274,27 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
         {
         function renderItem(param : ListRenderItemInfo<TransactionInfo>) : JSX.Element
             {
+            const ti : TransactionInfo = param.item;
+            const isNegative : boolean = ti.valueSat < BIG_0;
+            const valueColor : string = isNegative ? COLOR_RED : COLOR_BLACK;
+
+            function renderUSD() : JSX.Element | null
+                {
+                if (am.current.wm.ninfo.id != NET_ID.MAIN) return null;
+                const value : bigint = isNegative ? -ti.valueSat : ti.valueSat;
+                const valueUSD : string = PRICE_FINDER.satoshiToUSD(value);
+                if (!valueUSD) return null;
+                return (<Text style={{ color: valueColor }}> ({ (isNegative ? "-$ " : "$ ") + valueUSD })</Text>);
+                }
+        
             function renderTxLogEntry(ti : TransactionInfo) : JSX.Element
                 {
                 return (
                     <TouchableRipple rippleColor={ COLOR_PURPLE_RIPPLE } onPress={ () : void => onShowTx(ti) }>
                         <View style={{ width: "100%", paddingLeft: 24, paddingRight: 24, paddingTop: 9, paddingBottom: 9 }}>
-                            <View style={ commonStyles.rowContainerV2 }>
-                                <Text style={{ color: COLOR_BLACK }}>{ formatSatoshi(ti.valueSat, MRX_DECIMALS) }</Text>
+                            <View style={ commonStyles.rowContainer }>
+                                <Text style={{ color: valueColor }}>{ formatSatoshi(ti.valueSat, MRX_DECIMALS) }</Text>
+                                { renderUSD() }
                                 <View style={{ flex: 1 }}/>
                                 <Text style={{ color: COLOR_BLACK }}>{ ti.dateTimeStr }</Text>
                             </View>
@@ -280,7 +304,6 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                     );
                 }
 
-            const ti : TransactionInfo = param.item;
             if (param.index + 1 == am.current.txLog.log.length && am.current.txLog.canLoadMoreTxs)
                 return (
                     <>
@@ -317,7 +340,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             return (
                 <TouchableRipple style={{ flex: 1 }} rippleColor={ COLOR_PURPLE_RIPPLE } onPress={ () : void => onShowToken(mrc20) }>
                     <View>
-                        <View style={ commonStyles.rowContainerV2 }>
+                        <View style={ commonStyles.rowContainer }>
                             <View style={{ paddingLeft: 24, paddingRight: 0, paddingTop: 9, paddingBottom: 9 }}>
                                 <Text style={{ color: COLOR_BLACK }}>{ name }</Text>
                                 <Text style={{ color: COLOR_MIDDLE_GREY }}>{ balance }</Text>
@@ -371,6 +394,14 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
             return (<ProgressBar style={{ height: 3 }} progress={ 1 } color={ COLOR_DARK_PURPLE } />);
         }
 
+    function renderBalanceUSD() : JSX.Element | null
+        {
+        if (balanceUSD)
+            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + balanceUSD }</Text>);
+        else
+            return null;
+        }
+
     return (
          <View style={ commonStyles.containingView }>
             <TitleBar title="Account Home" onBurgerPressed={ onBurgerPressed }/>
@@ -396,6 +427,7 @@ export function AccountHomeView(props : AccountHomeViewProps) : JSX.Element
                 <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="MRX Balance:" text={ balance } />
+                { renderBalanceUSD() }
                 <View style={{ height: 24 }} />
                 <SimpleButtonPair left={{ text: "Send", icon: "debug-step-out", onPress: onSend }} right={{ text: "Receive", icon: "debug-step-into", onPress: onReceive }}/>
                 <View style={{ height: 24 }} />

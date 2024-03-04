@@ -139,6 +139,14 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
             return null;
         }
 
+    function renderBalanceUSD() : JSX.Element | null
+        {
+        if (am.current.wm.balanceUSD)
+            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+        else
+            return null;
+        }
+
     return (
         <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <TitleBar title="Export Account WIF" onBurgerPressed={ onBurgerPressed }/>
@@ -150,6 +158,7 @@ export function ExportAccountView(props : ExportAccountViewProps) : JSX.Element
                 <AddressQuasiDoublet title="Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
+                { renderBalanceUSD() }
                 <View style={{ height: 24 }} />
                 <Text style={{ color: COLOR_BLACK }}>To export the account in Wallet Interchange Format (WIF) enter the password below.</Text>
                 <View style={{ height: 24 }}/>

@@ -1,18 +1,20 @@
 import "../../shimWrapper.js";
 
 import React from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
-import { MC, MRX_DECIMALS } from "../mc";
-import { AddressQuasiDoublet, commonStyles, DoubleDoublet, formatSatoshi, SimpleButtonPair, SimpleDoublet, TitleBar } from "./common";
+import { BIG_0, MC, MRX_DECIMALS } from "../mc";
+import { AddressQuasiDoublet, COLOR_BLACK, commonStyles, DoubleDoublet, formatSatoshi, noumberOfDecimals, SimpleButtonPair, SimpleDoublet, TitleBar, validateAndSatoshizeFloatStr } from "./common";
 import { WorkFunctionResult } from "./MainView";
 import { MRC20Token } from "../MRC20";
 import { WALLET_SCREENS } from "./WalletView";
 import { Insight } from "metrixjs-wallet";
 import { TransactionSentViewSerializableProps } from "./TransactionSentView";
 import { getSendViewLoadCount, SendViewSerializableProps } from "./SendView";
+import { USDPriceFinder } from "../USDPriceFinder";
+import { NET_ID } from "../NetInfo";
 
 
 
@@ -43,6 +45,7 @@ export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
     {
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
     const am = MC.getMC().storage.accountManager;
+    const priceFinder = USDPriceFinder.getFinder();
     const tk : MRC20Token | null = props.tokenAddress ? am.current.tkm.findToken(props.tokenAddress) : null;
     const currency : string = tk ? tk.symbol : "MRX";
     const decimalizedAmountStr : string = formatSatoshi(props.amountStr, tk ? tk.decimals : MRX_DECIMALS);
@@ -65,7 +68,7 @@ export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
         const gasLimit : number = Number.parseInt(props.gasLimitStr!);
         am.current.wm.mrc20Send(tk!.address, props.toAddr, BigInt(props.amountStr), gasLimit, gasPrice).then((txid : string) : void =>
             {
-            const params : TransactionSentViewSerializableProps = { decimalizedAmountStr: decimalizedAmountStr, symbol: tk!.symbol, destinationAddr: props.toAddr, destinationMnsName: mnsName, txid: txid };
+            const params : TransactionSentViewSerializableProps = { decimalizedAmountStr: decimalizedAmountStr, symbol: tk!.symbol, destinationAddr: props.toAddr, destinationMnsName: mnsName, txid: txid, sendingTokens: true };
             onWorkDone({ nextScreen: WALLET_SCREENS.TX_SENT, nextScreenParams: params });
             })
         .catch((e : any) : void => finishWorkWithError(MC.errorToString(e), onWorkDone));
@@ -78,7 +81,7 @@ export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
             {
             if (result.txid)
                 {
-                const params : TransactionSentViewSerializableProps = { decimalizedAmountStr: decimalizedAmountStr, symbol: "MRX", destinationAddr: props.toAddr, destinationMnsName: mnsName, txid: result.txid };
+                const params : TransactionSentViewSerializableProps = { decimalizedAmountStr: decimalizedAmountStr, symbol: "MRX", destinationAddr: props.toAddr, destinationMnsName: mnsName, txid: result.txid, sendingTokens: false };
                 onWorkDone({ nextScreen: WALLET_SCREENS.TX_SENT, nextScreenParams: params });
                 }
             else
@@ -128,6 +131,17 @@ export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
             return (<SimpleDoublet title="Transaction speed:" text={ props.feerateName! }/>);
         }
 
+    function renderAmountToSendUSD() : JSX.Element | null
+        {
+        if (tk || am.current.wm.ninfo.id != NET_ID.MAIN) return null;
+        if (noumberOfDecimals(props.amountStr) > MRX_DECIMALS) return null;
+        const amountToSend : bigint = BigInt(props.amountStr);
+        if (amountToSend <= BIG_0) return null;
+        const amountToSendUSD : string = priceFinder.satoshiToUSD(amountToSend);
+        if (!amountToSendUSD) return null;
+        return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + amountToSendUSD }</Text>);
+        }
+
     return (
         <View style={ commonStyles.containingView }>
             <TitleBar title="Confirm Sending?" onBurgerPressed={ props.onBurgerPressed }/>
@@ -139,6 +153,7 @@ export function ConfirmSendView(props : ConfirmSendViewProps) : JSX.Element
                 <AddressQuasiDoublet title="From Account Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Ammount to Send:" text={ `${ decimalizedAmountStr } ${ currency }` }/>
+                { renderAmountToSendUSD() }
                 <View style={{ height: 7 }} />
                 <AddressQuasiDoublet title="Send to Address:" address={ props.toAddr } mnsName={ props.mnsName }/>
                 <View style={{ height: 7 }} />

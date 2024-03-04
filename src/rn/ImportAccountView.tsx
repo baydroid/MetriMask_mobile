@@ -10,13 +10,14 @@ import { WorkFunctionResult } from "./MainView";
 import { commonStyles, InvalidMessage, TitleBar, SimpleButton, SimpleTextInput, DoubleDoublet } from "./common";
 import { AccountManager } from "../AccountManager";
 import { nim } from "../NetInfo";
+import { USDPriceFinder } from "../USDPriceFinder";
 
 
 
 const EMPTY_WIF_ERROR        = "The WIF field can't be empty.";
 const INVALID_WIF_ERROR      = "The WIF is invalid.";
 const EMPTY_MNEMONIC_ERROR   = "The Mnemonic field can't be empty.";
-const INVALID_MNEMONIC_ERROR = "The mnemonic is invalid.";
+const INVALID_MNEMONIC_ERROR = "The Mnemonic is invalid.";
 
 
 
@@ -56,14 +57,15 @@ export function ImportAccountView(props : ImportAccountViewProps) : JSX.Element
                     ok = am.importByMnemonic(props.name, props.netId, param);
                 if (ok)
                     {
-                    am.current.finishLoad().then((info : Insight.IGetInfo | null) : void =>
+                    am.current.finishLoad().then(() : void =>
                         {
-                        onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_HOME });
+                        USDPriceFinder.getFinder().start().then(() : void =>
+                            {
+                            onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_HOME });
+                            })
+                        .catch(MC.errorFunc(`ImportAccountView importAccount() USDPriceFinder.start()`));
                         })
-                    .catch((e : any) : void =>
-                        {
-                        MC.raiseError(e, `ImportAccountView importAccount()`);
-                        });
+                    .catch(MC.errorFunc(`ImportAccountView importAccount() AccountManager.finishLoad()`));
                     }
                 else
                     {

@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, GestureResponderEvent, Keyboard } from "react-native";
 
-import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, MRX_DECIMALS } from "../mc";
-import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, COLOR_BLACK, COLOR_MIDDLE_GREY } from "./common";
+import { BIG_0, DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI, MC, MRX_DECIMALS } from "../mc";
+import { commonStyles, SimpleDoublet, DoubleDoublet, formatSatoshi, BurgerlessTitleBar, SimpleButtonPair, SimpleTextInputPair, SimpleTextInput, validateAndSatoshizeFloatStr, validateIntStr, InvalidMessage, AddressQuasiDoublet, COLOR_BLACK, COLOR_MIDDLE_GREY, noumberOfDecimals } from "./common";
 import { ContractCallParams } from "../WalletManager"
+import { USDPriceFinder } from "../USDPriceFinder";
+import { NET_ID } from "../NetInfo";
 
 
 
+const PRICE_FINDER               = USDPriceFinder.getFinder();
 const AMOUNT_NOT_NUMBER_ERROR    = "The amount must be a number.";
 const GAS_LIMIT_NOT_NUMBER_ERROR = "The gas limit must be a number greater than 0.";
 const GAS_PRICE_NOT_NUMBER_ERROR = "The gas price must be a number greater than 0.";
@@ -126,6 +129,26 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
             return null;
         }
 
+    function renderBalanceUSD() : JSX.Element | null
+        {
+        if (am.current.wm.balanceUSD)
+            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+        else
+            return null;
+        }
+
+    function renderAmountToSendUSD() : JSX.Element | null
+        {
+        if (am.current.wm.ninfo.id != NET_ID.MAIN) return null;
+        const amountToSendStr : string = validateAndSatoshizeFloatStr(amountStr, MRX_DECIMALS);
+        if (!amountToSendStr.length || noumberOfDecimals(amountStr) > MRX_DECIMALS) return null;
+        const amountToSend : bigint = BigInt(amountToSendStr);
+        if (amountToSend <= BIG_0) return null;
+        const amountToSendUSD : string = PRICE_FINDER.satoshiToUSD(amountToSend);
+        if (!amountToSendUSD) return null;
+        return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + amountToSendUSD }</Text>);
+        }
+
     return (
         <View style={ commonStyles.containingView } onStartShouldSetResponder={ onGeneralTouch }>
             <BurgerlessTitleBar title="Permission to Transact?"/>
@@ -139,12 +162,14 @@ export function PermissionToSendView(props : PermissionToSendViewProps) : JSX.El
                 <AddressQuasiDoublet title="Sending Account Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Sending Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
+                { renderBalanceUSD() }
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Webpage Requesting to Send:" text={ props.requestingURL }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Contract Address:" text={ contractAddr }/>
                 <View style={{ height: 7 }} />
                 <SimpleTextInput label="Amount to Send (MRX):" keyboardType="numeric" value={ amountStr } onChangeText={ onChangeAmount }/>
+                { renderAmountToSendUSD() }
                 <View style={{ height: 7 }} />
                 <SimpleTextInputPair
                     left={{ label: "Gas Limit", value: gasLimitStr, onChangeText: onChangeGasLimit, keyboardType: "numeric" }}

@@ -17,29 +17,74 @@ You can find package.json and package-lock.json in the package_etc folder.
     System:
         OS: Linux 5.14 Fedora 33 (Workstation Edition) 33 (Workstation Edition)
         CPU: (32) x64 AMD Ryzen 9 3950X 16-Core Processor
-        Memory: 75.69 GB / 125.72 GB
-        Shell: 5.0.17 - /bin/bash
-    Binaries:
-        Node: 16.13.2 - ~/.nvm/versions/node/v16.13.2/bin/node
-        Yarn: 1.22.17 - ~/.nvm/versions/node/v16.13.2/bin/yarn
-        npm: 8.1.2 - ~/.nvm/versions/node/v16.13.2/bin/npm
-        Watchman: 2022.01.03.00 - /home/linuxbrew/.linuxbrew/bin/watchman
-    SDKs:
-        Android SDK: 31
+        Memory: 103.86 GB / 125.72 GB
+        Shell:
+            version: 5.0.17
+            path: /bin/bash
+        Binaries:
+        Node:
+            version: 20.11.0
+            path: ~/.nvm/versions/node/v20.11.0/bin/node
+        Yarn:
+            version: 1.22.10
+            path: /usr/bin/yarn
+        npm:
+            version: 10.4.0
+            path: ~/.nvm/versions/node/v20.11.0/bin/npm
+        Watchman:
+            version: 2023.10.30.00
+            path: /home/linuxbrew/.linuxbrew/bin/watchman
+        SDKs:
+            Android SDK:
+                API Levels:
+                    - "33"
+                    - "33"
+                    - "33"
+                    - "34"
+                Build Tools:
+                    - 30.0.3
+                    - 33.0.0
+                    - 33.0.1
+                    - 33.0.2
+                    - 34.0.0
+                System Images:
+                    - android-33-ext4 | Google Play ARM 64 v8a
+                    - android-33-ext4 | Google Play Intel x86_64 Atom
+                    - android-33-ext5 | Google Play ARM 64 v8a
+                    - android-33-ext5 | Google Play Intel x86_64 Atom
+                    - android-33 | Intel x86_64 Atom
+                    - android-33 | Google APIs Intel x86_64 Atom
+                    - android-34 | Google APIs Intel x86_64 Atom
+            Android NDK: Not Found
     IDEs:
-        Android Studio: Android Studio Chipmunk | 2021.2.1 Patch 1 (Gradle 7.5.1)
+        Android Studio: Not Found
     Languages:
-        Java: Android Studio embedded JDK 11.0.12
+        Java:
+            version: 17.0.7
+            path: /home/me/Android/jbr/bin/javac
+        Ruby:
+            version: 2.7.3
+            path: /usr/bin/ruby
     npmPackages:
-        @react-native-community/cli: Not Found
-        react: 18.1.0 => 18.1.0 
-        react-native: 0.70.6 => 0.70.6 
+        "@react-native-community/cli": Not Found
+        react:
+            installed: 18.2.0
+            wanted: 18.2.0
+        react-native:
+            installed: 0.73.5
+            wanted: 0.73.5
     npmGlobalPackages:
-        *react-native*: Not Found
-
-For some reason npx react-native info couldn't find Android Studio, or the SDK, or the JDK. So I filled in those bits by hand. Also, despite what npx react-native info says, I think it might be using React-Native v0.72.3.
+        "*react-native*": Not Found
+    Android:
+        hermesEnabled: true
+        newArchEnabled: false
+    iOS:
+        hermesEnabled: Not found
+        newArchEnabled: false
 
 #### iOS
+
+    *****   iOS BUILD Not Yet Done for this version.   *****
 
     System:
         OS: macOS 13.2.1
@@ -113,12 +158,12 @@ Hack the node modules with this command.
 
 Follow the instructions here on editing babel.config.js to complete the installation of react-native-reanimated.
 
-    https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/installation/
+    https://docs.swmansion.com/react-native-reanimated/docs/fundamentals/getting-started/
 
 Also add the plugin @babel/plugin-proposal-private-methods to babel.config.js, with the loose option set to true. Be careful to make sure that react-native-reanimated/plugin comes last in the plugin array. Assuming there aren't any other plugins at the end of the editing babel.config.js should look something like this:
 
     module.exports = {
-      presets: ["module:metro-react-native-babel-preset"],
+      presets: ['module:@react-native/babel-preset'],
       plugins: [["@babel/plugin-proposal-private-methods", { "loose": true }], "react-native-reanimated/plugin"]
     };
 
@@ -141,7 +186,7 @@ to
 
 Edit node_modules/react-native/Libraries/Lists/FlatList.js.
 
-Find the constructor for class FlatList (currently at line 412 of FlatList.js). The 1st executable line of the constructor should be
+Find the constructor for class FlatList (currently at line 421 of FlatList.js). The 1st executable line of the constructor should be
 
     super(props);
 
@@ -158,7 +203,8 @@ With the current version of FlatList.js the start of the constructor should now 
 
 
 
-#### SUBSEQUENT STEPS FOR IOS
+### SUBSEQUENT STEPS FOR IOS
+### IOS BUILD NOT YET DONE FOR THIS VERSION
 
 
 
@@ -438,35 +484,27 @@ To build and run the release version instead use this command
 
 
 
-#### SUBSEQUENT STEPS FOR ANDROID
-
-
+### SUBSEQUENT STEPS FOR ANDROID
 
 #### STEP 9a)
 
-Edit android/build.gradle. Add the line
+Edit android/app/src/main/res/values/strings.xml. Set the android app name by setting the value of the "app_name" string. Leave any other strings intact.
 
-    classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0')
+Change
 
-to the existing buildscript.dependencies section already in the file (just above where the comments say not to add dependancies). I.E. placed like so.
+    <resources>
+        <string name="app_name">MetriMask_mobile</string>
+    </resources>
 
-    buildscript {
-        dependencies {
-            classpath('org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0')
-        }
-    }
-    
+to
+
+    <resources>
+        <string name="app_name">MetriMask</string>
+    </resources>
+
 #### STEP 10a)
 
-Edit android/app/build.gradle and, if necessary, change enableHermes: false to enableHermes: true in the existing project.ext.react section in the file. Afterwards it should look similar to this.
-    
-    project.ext.react = [
-        enableHermes: true,  // clean and rebuild if changing
-    ]
-
-Note in later versions of react-native Hermes is enabled by default.
-
-Now add the
+Edit android/app/build.gradle and add the
 
     missingDimensionStrategy 'react-native-camera', 'general'
     
@@ -524,22 +562,6 @@ Add the intent filter
 to android/app/src/main/AndroidManifest.xml, immediately after the existing intent filter.
 
 #### STEP 12a)
-
-Edit android/app/src/main/res/values/strings.xml. Set the android app name by setting the value of the "app_name" string. Leave any other strings intact.
-
-Change
-
-    <resources>
-        <string name="app_name">MetriMask_mobile</string>
-    </resources>
-
-to
-
-    <resources>
-        <string name="app_name">MetriMask</string>
-    </resources>
-
-#### STEP 13a)
     
 Edit node_modules/react-native-os/android/build.gradle, change
 
@@ -553,7 +575,7 @@ to
         implementation 'com.facebook.react:react-native:+'
     }
 
-#### STEP 14a)
+#### STEP 13a)
 
 Edit node_modules/react-native-tcp/android/build.gradle, change
 
@@ -569,23 +591,23 @@ to
         implementation 'com.koushikdutta.async:androidasync:2.1.6'
     }
 
-#### STEP 15a)
+#### STEP 14a)
 
 Provide the icons by copying the res folder to android/app/src/main, overwriting 10 PNG icon files.
 
     cp -rv res/* android/app/src/main/res
 
-#### STEP 16a)
+#### STEP 15a)
 
 In a 2nd terminal window change to the project directory, and start Metro with this command
 
     npx react-native start --reset-cache
 
-#### STEP 17a)
+#### STEP 16a)
 
 Activate developer mode on an android, enable USB debugging, and connect it to the computer. (You can actually skip this step and it will still build, but the build will complete with an emulator not found error).
 
-#### STEP 18a)
+#### STEP 17a)
 
 From the terminal window not running Metro in the project directory build and run the debug version of the app with this command.
 
@@ -593,7 +615,7 @@ From the terminal window not running Metro in the project directory build and ru
 
 To build and run the release verion instead use this command
 
-    npx react-native run-android --variant=release
+    npx react-native run-android --mode=release
 
 Afterwards the APKs can be found in
 

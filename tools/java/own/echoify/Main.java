@@ -81,7 +81,7 @@ public class Main
         {
         quoteLine("@echo.", false, bout);
         quoteLine("@echo ################################################################################################", false, bout);
-        quoteLine(input, false, bout);
+        quoteLine("call " + input, false, bout);
         }
 
     private static void output1LineSh(String input, BufferedWriter bout) throws java.io.IOException

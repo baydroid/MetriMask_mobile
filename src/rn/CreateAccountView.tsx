@@ -5,12 +5,11 @@ import DropDownPicker, { ItemType, ValueType} from 'react-native-dropdown-picker
 import { StackNavigationProp } from "@react-navigation/stack";
 
 import { MC } from "../mc";
-import { nim } from "../NetInfo";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { NET_ID } from "../NetInfo";
 import { commonStyles, SimpleTextInput, TitleBar, SimpleButton, InvalidMessage, netInfoDropDownItems, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
-import { Insight } from "metrixjs-wallet";
+import { USDPriceFinder } from "../USDPriceFinder";
 
 
 
@@ -60,15 +59,16 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
                 {
                 if (!am.isLoggedIn) am.providePassword(password);
                 const mnemonic : string = am.createNewAccount(name, networkDDValue as number);
-                if (!mnemonic.length) MC.raiseError(`Attempt to create an account with an already existing name.`, `CreateAccountView createNew() 1`);
-                am.current.finishLoad().then((info : Insight.IGetInfo | null) : void =>
+                if (!mnemonic.length) MC.raiseError(`Attempt to create an account with an already existing name.`, `CreateAccountView createNew()`);
+                am.current.finishLoad().then(() : void =>
                     {
-                    onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_CREATED, nextScreenParams: { mnemonic } });
+                    USDPriceFinder.getFinder().start().then(() : void =>
+                        {
+                        onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_CREATED, nextScreenParams: { mnemonic } });
+                        })
+                    .catch(MC.errorFunc(`CreateAccountView createNew() USDPriceFinder.start()`));
                     })
-                .catch((e : any) : void =>
-                    {
-                    MC.raiseError(e, `CreateAccountView createNew() 2`);
-                    });
+                .catch(MC.errorFunc(`CreateAccountView createNew() AccountManager.finshload()`));
                 });
             }
         }
@@ -243,7 +243,7 @@ export function CreateAccountView(props : CreateAccountViewProps) : JSX.Element
             <View style={ commonStyles.horizontalBar }/>
             <View style={{ height: 24 }}/>
             <View style={ commonStyles.squeezed }>
-                <Text style={{ color: COLOR_MIDDLE_GREY}}>Account Network:</Text>
+                <Text style={{ color: COLOR_MIDDLE_GREY }}>Account Network:</Text>
                 <DropDownPicker
                     dropDownContainerStyle={{ borderColor: COLOR_DARKISH_PURPLE }}
                     style={{ borderColor: COLOR_DARKISH_PURPLE }}

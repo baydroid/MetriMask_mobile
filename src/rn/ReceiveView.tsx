@@ -1,7 +1,7 @@
 import "../../shimWrapper.js";
 
 import React from "react";
-import { useWindowDimensions, View } from "react-native";
+import { Text, useWindowDimensions, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import QRCode from "react-native-qrcode-svg";
@@ -9,7 +9,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 
 import { MC, MRX_DECIMALS } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
-import { commonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton, AddressQuasiDoublet } from "./common";
+import { commonStyles, DoubleDoublet, formatSatoshi, SimpleDoublet, TitleBar, SimpleButton, AddressQuasiDoublet, COLOR_BLACK } from "./common";
 
 
 
@@ -32,6 +32,14 @@ export function ReceiveView(props : ReceiveViewProps) : JSX.Element
         return qrSize;
         }
 
+    function renderBalanceUSD() : JSX.Element | null
+        {
+        if (am.current.wm.balanceUSD)
+            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+        else
+            return null;
+        }
+
     return (
         <View style = { commonStyles.containingView }>
             <TitleBar title="Receive" onBurgerPressed={ props.onBurgerPressed }/>
@@ -41,12 +49,13 @@ export function ReceiveView(props : ReceiveViewProps) : JSX.Element
                 <DoubleDoublet titleL="Account:" textL={ am.current.accountName } titleR="Network:" textR={ am.current.wm.ninfo.name } />
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="Account Balance:" text={ formatSatoshi(am.current.wm.balanceSat, MRX_DECIMALS) + " MRX" }/>
+                { renderBalanceUSD() }
                 <View style={{ height: 7 }} />
                 <AddressQuasiDoublet title="Account Address:" acnt={ am.current }/>
                 <View style = {{ height: 24 }} />
                 <SimpleButton onPress={ () : void => Clipboard.setString(am.current.wm.address) } text="Copy to Clipboard" icon="content-copy"/>
                 <View style={{ height: 24 }} />
-                <View style={ commonStyles.rowContainerV2 }>
+                <View style={ commonStyles.rowContainer }>
                     <View style={{ flex: 1 }}/>
                     <QRCode value={ am.current.wm.address } size={ qrSize() }/>
                     <View style={{ flex: 1 }}/>

@@ -31,6 +31,8 @@ export class AccountManager
     private txLogNotifications : Map<number, () => any> = new Map<number, () => any>();
     private pollingNonce : number = 0;
     private pollingTimeout : ReturnType<typeof setTimeout> | null = null;
+    private onPollingInitialized : (() => void) | null = null;
+    private pollingInitializing : boolean = false;
     private pollingOngoing : boolean = false;
     private pollAll : boolean = false;
 
@@ -141,6 +143,17 @@ export class AccountManager
             this.updateCurrentAccount(acnt);
             return true;
             }
+        }
+
+    public setOnPollingInitialized(onPollingInitialized : () => void) : boolean
+        {
+        if (this.pollingInitializing)
+            {
+            this.onPollingInitialized = onPollingInitialized;
+            return true;
+            }
+        else
+            return false;
         }
 
     public removeAccount(name : string) : boolean
@@ -301,7 +314,7 @@ export class AccountManager
 
     private startPolling() : void
         {
-        this.pollingOngoing = true;
+        this.pollingInitializing = this.pollingOngoing = true;
         this.pollingRepetitionUnit(++this.pollingNonce);
         }
 
@@ -327,6 +340,15 @@ export class AccountManager
         if (myNonce == this.pollingNonce)
             {
             this.pollAll = false;
+            if (this.pollingInitializing)
+                {
+                this.pollingInitializing = false;
+                if (this.onPollingInitialized)
+                    {
+                    this.onPollingInitialized();
+                    this.onPollingInitialized = null;
+                    }
+                }
             if (this.isLoggedIn)
                 this.pollingTimeout = setTimeout(() : void => this.pollingRepetitionUnit(myNonce), 1000*POLLING_INTERVAL_SECS);
             else
@@ -376,7 +398,7 @@ export class AccountManager
                         }
                     if (okToNotify())
                         {
-                        if (!(this.current.wm.balanceSatDelta == BIG_0) || !(this.current.wm.unconfirmedBalanceSatDelta == BIG_0))
+                        if (this.current.wm.balanceSatDelta != BIG_0 || this.current.wm.unconfirmedBalanceSatDelta != BIG_0 || this.current.wm.balanceUSDChanged)
                             for (const onBalanceChange of this.balanceNotifications.values()) onBalanceChange();
                         if (this.pollAll || this.txLogNotifications.size)
                             {

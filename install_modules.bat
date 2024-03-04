@@ -1,168 +1,174 @@
 @echo.
 @echo ################################################################################################
-npm install --save-dev @babel/plugin-proposal-private-methods
+call npm install --save-dev @babel/plugin-proposal-private-methods
 @echo.
 @echo ################################################################################################
-npm install --save assert
+call npm install --save assert
 @echo.
 @echo ################################################################################################
-npm install --save ethers
+call npm install --save ethers
 @echo.
 @echo ################################################################################################
-npm install --save idna-uts46
+call npm install --save idna-uts46
 @echo.
 @echo ################################################################################################
-npm install --save base58-js
+call npm install --save base58-js
 @echo.
 @echo ################################################################################################
-npm install --save sha256-uint8array
+call npm install --save sha256-uint8array
 @echo.
 @echo ################################################################################################
-npm install --save bip39
+call npm install --save bip39
 @echo.
 @echo ################################################################################################
-npm install --save bech32
+call npm install --save bech32
 @echo.
 @echo ################################################################################################
-npm install --save mweb3
+call npm install --save mweb3
 @echo.
 @echo ################################################################################################
-npm install --save metrixjs-wallet
+call npm install --save metrixjs-wallet
 @echo.
 @echo ################################################################################################
-npm install --save bitcoinjs-message
+call npm install --save bitcoinjs-message
 @echo.
 @echo ################################################################################################
-npm install --save bitcoinjs-lib@4.0.5
+call npm install --save bitcoinjs-lib@4.0.5
 @echo.
 @echo ################################################################################################
-npm install --save @metrixnames/mnslib
+call npm install --save @metrixcoin/metrilib
 @echo.
 @echo ################################################################################################
-npm install --save @metrixcoin/metrilib
+call npm install --save @metrixnames/mnslib
 @echo.
 @echo ################################################################################################
-npm install --save bs58
+call npm install --save @metrixnames/pricelib
 @echo.
 @echo ################################################################################################
-npm install --save base-64
+call npm install --save bs58
 @echo.
 @echo ################################################################################################
-npm install --save-dev @types/base-64
+call npm install --save base-64
 @echo.
 @echo ################################################################################################
-npm install --save scryptsy
+call npm install --save-dev @types/base-64
 @echo.
 @echo ################################################################################################
-npm install --save-dev @types/scryptsy
+call npm install --save scryptsy
 @echo.
 @echo ################################################################################################
-npm install --save keccak
+call npm install --save-dev @types/scryptsy
 @echo.
 @echo ################################################################################################
-npm install --save-dev @types/keccak
+call npm install --save keccak
 @echo.
 @echo ################################################################################################
-npm install --save lodash
+call npm install --save-dev @types/keccak
 @echo.
 @echo ################################################################################################
-npm install --save-dev @types/lodash
+call npm install --save lodash
 @echo.
 @echo ################################################################################################
-npm install --save react-native-os
+call npm install --save-dev @types/lodash
 @echo.
 @echo ################################################################################################
-npm install --save react-native-tcp
+call npm install --save react-native-os
 @echo.
 @echo ################################################################################################
-npm install --save react-native-udp
+call npm install --save react-native-tcp
 @echo.
 @echo ################################################################################################
-npm install --save github:baydroid/mrx-address-validation
+call npm install --save react-native-udp
 @echo.
 @echo ################################################################################################
-npm install --save github:baydroid/usetimeout-react-hook
+call npm install --save github:baydroid/mrx-address-validation
 @echo.
 @echo ################################################################################################
-npm install --save github:baydroid/react-native-user-inactivity
+call npm install --save github:baydroid/usetimeout-react-hook
 @echo.
 @echo ################################################################################################
-npm install --save react-native-exception-handler
+call npm install --save github:baydroid/react-native-user-inactivity
 @echo.
 @echo ################################################################################################
-npm install --save react-native-safe-area-context
+call npm install --save react-native-exception-handler
 @echo.
 @echo ################################################################################################
-npm install --save react-native-gesture-handler
+call npm install --save react-native-safe-area-context
 @echo.
 @echo ################################################################################################
-npm install --save react-native-permissions
+call npm install --save react-native-gesture-handler
 @echo.
 @echo ################################################################################################
-npm install --save react-native-reanimated
+call npm install --save react-native-permissions
 @echo.
 @echo ################################################################################################
-npm install --save deprecated-react-native-prop-types
+call npm install --save react-native-reanimated
 @echo.
 @echo ################################################################################################
-npm install --save react-native-screens
+call npm install --save deprecated-react-native-prop-types
 @echo.
 @echo ################################################################################################
-npm install --save react-native-webview
+call npm install --save react-native-screens
 @echo.
 @echo ################################################################################################
-npm install --save react-native-paper
+call npm install --save react-native-webview
 @echo.
 @echo ################################################################################################
-npm install --save @react-native-cookies/cookies
+call npm install --save react-native-paper
 @echo.
 @echo ################################################################################################
-npm install --save @react-navigation/native
+call npm install --save @react-native-cookies/cookies
 @echo.
 @echo ################################################################################################
-npm install --save @react-navigation/bottom-tabs
+call npm install --save @react-navigation/native
 @echo.
 @echo ################################################################################################
-npm install --save @react-navigation/stack
+call npm install --save @react-navigation/bottom-tabs
 @echo.
 @echo ################################################################################################
-npm install --save @react-navigation/drawer
+call npm install --save @react-navigation/stack
 @echo.
 @echo ################################################################################################
-npm install --save github:baydroid/react-native-camera
+call npm install --save @react-navigation/drawer
 @echo.
 @echo ################################################################################################
-npm install --save react-native-qrcode-scanner
+call npm install --save github:baydroid/react-native-camera
 @echo.
 @echo ################################################################################################
-npm install --save react-native-vector-icons
+call npm install --save react-native-qrcode-scanner
 @echo.
 @echo ################################################################################################
-npm install --save @react-native-async-storage/async-storage
+call npm install --save react-native-vector-icons
 @echo.
 @echo ################################################################################################
-npm install --save react-native-crypto
+call npm install --save @react-native-async-storage/async-storage
 @echo.
 @echo ################################################################################################
-npm install --save react-native-randombytes
+call npm install --save react-native-crypto
 @echo.
 @echo ################################################################################################
-npm install --save react-native-responsive-dimensions
+call npm install --save react-native-randombytes
 @echo.
 @echo ################################################################################################
-npm install --save @react-native-clipboard/clipboard
+call npm install --save react-native-responsive-dimensions
 @echo.
 @echo ################################################################################################
-npm install --save react-native-dropdown-picker
+call npm install --save @react-native-clipboard/clipboard
 @echo.
 @echo ################################################################################################
-npm install --save react-native-pager-view
+call npm install --save react-native-dropdown-picker
 @echo.
 @echo ################################################################################################
-npm install --save react-native-tab-view
+call npm install --save react-native-pager-view
 @echo.
 @echo ################################################################################################
-npm install --save react-native-svg
+call npm install --save react-native-tab-view
 @echo.
 @echo ################################################################################################
-npm install --save github:baydroid/react-native-qrcode-svg
+call npm install --save react-native-svg
+@echo.
+@echo ################################################################################################
+call npm install --save react-native-qrcode-svg
+@echo.
+@echo ################################################################################################
+call npm install --save big-integer

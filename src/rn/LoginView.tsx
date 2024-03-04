@@ -2,12 +2,13 @@ import React, { useRef, useState } from "react";
 import { View, TextInput, NativeSyntheticEvent, TextInputEndEditingEventData, Image, useWindowDimensions, GestureResponderEvent, Keyboard } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Insight } from "metrixjs-wallet";
 
 import { MC } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
 import { commonStyles, InvalidMessage, SimpleButton, SimpleTextInput, TitleBar } from "./common";
-import { Insight } from "metrixjs-wallet";
+import { USDPriceFinder } from "../USDPriceFinder";
 
 
 
@@ -22,8 +23,8 @@ type LoginViewProps =
     showWorkingAsync : (asyncWorkFunction : (onWorkDone : (result : WorkFunctionResult) => void) => any) => void;
     };
 
-let invalidPasswordNonce : number = 1;
-let loginUnderway : boolean = false;
+let invalidPasswordNonce : number  = 1;
+let loginUnderway        : boolean = false;
 
 export function LoginView(props : LoginViewProps) : JSX.Element
     {
@@ -35,7 +36,6 @@ export function LoginView(props : LoginViewProps) : JSX.Element
     const plainPasswordRef = useRef<TextInput>(null);
 
     const walletNavigation = useNavigation<StackNavigationProp<any>>();
-
     const layout = useWindowDimensions();
 
     if (props.loginFailure == invalidPasswordNonce && !invalidPassword) setInvalidPassword(true);
@@ -55,17 +55,7 @@ export function LoginView(props : LoginViewProps) : JSX.Element
                 am.providePassword(password);
                 const loggedInOK : boolean = am.login();
                 if (loggedInOK)
-                    {
-                    am.current.finishLoad().then((info : Insight.IGetInfo | null) : void =>
-                        {
-                        loginUnderway = false;
-                        onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_HOME });
-                        })
-                    .catch((e : any) : void =>
-                        {
-                        MC.raiseError(e, `LoginView login()`);
-                        });
-                    }
+                    USDPriceFinder.getFinder().start().then(() : void => completeLogin(onWorkDone)).catch(MC.errorFunc(`LoginView login() price finder failed to start`));
                 else
                     {
                     const result : WorkFunctionResult = { nextScreen: WALLET_SCREENS.LOGIN, nextScreenParams: { loginFailure: invalidPasswordNonce } };
@@ -73,6 +63,17 @@ export function LoginView(props : LoginViewProps) : JSX.Element
                     }
                 });
             }
+        }
+
+    function completeLogin(onWorkDone : (result : WorkFunctionResult) => void) : void
+        {
+        const am = MC.getMC().storage.accountManager;
+        am.current.finishLoad().then(() : void =>
+            {
+            loginUnderway = false;
+            onWorkDone({ nextScreen: WALLET_SCREENS.ACCOUNT_HOME });
+            })
+        .catch(MC.errorFunc(`LoginView completeLogin()`));
         }
 
     function resetApp() : void 

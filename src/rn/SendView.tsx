@@ -9,11 +9,13 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { MC, MRX_DECIMALS, BIG_0, ADDRESS_SYNTAX } from "../mc";
 import { WALLET_SCREENS } from "./WalletView";
 import { WorkFunctionResult } from "./MainView";
-import { commonStyles, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr, AddressQuasiDoublet, noumberOfDecimals, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY } from "./common";
+import { commonStyles, DoubleDoublet, formatSatoshi, validateAndSatoshizeFloatStr, SimpleDoublet, TitleBar, SimpleTextInput, InvalidMessage, SimpleButtonPair, SimpleTextInputPair, LOADING_STR, validateIntStr, AddressQuasiDoublet, noumberOfDecimals, COLOR_DARKISH_PURPLE, COLOR_MIDDLE_GREY, COLOR_BLACK } from "./common";
 import { MRC20Token } from "../MRC20";
 import { QR_SCANNER_TARGETS } from "./QRAddressScanView";
 import { DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_SATOSHI } from "../mc";
 import { ConfirmSendViewSerializableProps } from "./ConfirmSendView";
+import { USDPriceFinder } from "../USDPriceFinder";
+import { NET_ID } from "../NetInfo";
 
 
 
@@ -29,6 +31,7 @@ const SEND_TO_EVM_ERROR              = "It's not possible to send to an EVM addr
 
 type ItemTypePlus = ItemType<string> & { decimals : number; };
 
+const priceFinder = USDPriceFinder.getFinder();
 const feerates = [ 226000000, 350000000, 500000000, ];
 const feerateDD : ItemType<number>[] =
     [
@@ -176,7 +179,7 @@ export function SendView(props : SendViewProps) : JSX.Element
             default: break;
             }
         const decimals : number = getDecimals();
-        const amountToSendStr = validateAndSatoshizeFloatStr(amountStr, decimals);
+        const amountToSendStr : string = validateAndSatoshizeFloatStr(amountStr, decimals);
         if (!amountToSendStr.length)
             {
             setErrorMessage(AMOUNT_NOT_NUMBER_ERROR);
@@ -419,6 +422,27 @@ export function SendView(props : SendViewProps) : JSX.Element
         if (errorMessage.length) setErrorMessage("");
         }
 
+    function renderBalanceUSD() : JSX.Element | null
+        {
+        if (tokenDDValue == "" && am.current.wm.balanceUSD)
+            return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + am.current.wm.balanceUSD }</Text>);
+        else
+            return null;
+        }
+
+    function renderAmountToSendUSD() : JSX.Element | null
+        {
+        if (tokenDDValue != "" || am.current.wm.ninfo.id != NET_ID.MAIN) return null;
+        const decimals : number = getDecimals();
+        const amountToSendStr : string = validateAndSatoshizeFloatStr(amountStr, decimals);
+        if (!amountToSendStr.length || noumberOfDecimals(amountStr) > decimals) return null;
+        const amountToSend : bigint = BigInt(amountToSendStr);
+        if (amountToSend <= BIG_0) return null;
+        const amountToSendUSD : string = priceFinder.satoshiToUSD(amountToSend);
+        if (!amountToSendUSD) return null;
+        return (<Text style={{ color: COLOR_BLACK }}>{ "$ " + amountToSendUSD }</Text>);
+        }
+
     function FeeOrGas() : JSX.Element
         {
         if (tokenDDValue != "")
@@ -480,6 +504,7 @@ export function SendView(props : SendViewProps) : JSX.Element
                 <AddressQuasiDoublet title="From Account Address:" acnt={ am.current }/>
                 <View style={{ height: 7 }} />
                 <SimpleDoublet title="From Account Balance:" text={ balanceStr }/>
+                { renderBalanceUSD() }
                 <View style={{ height: 14 }} />
                 <Text style={{ color: COLOR_MIDDLE_GREY}}>Token:</Text>
                 <DropDownPicker
@@ -499,6 +524,7 @@ export function SendView(props : SendViewProps) : JSX.Element
                     zIndexInverse={ 10 }/>
                 <View style={{ height: 24 }} />
                 <SimpleTextInput label="Amount:" keyboardType="numeric" value={ amountStr } onChangeText={ onChangeAmount } onFocus={ clearError }/>
+                { renderAmountToSendUSD() }
                 <View style={{ height: 24 }} />
                 { renderToAddressTextInput() }
                 <View style={{ height: 24 }} />

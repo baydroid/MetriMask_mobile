@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { BrowserTabContext } from "../BrowserTabContext";
+import { BrowserTabContext } from "./BrowserTabContext";
 import BrowserSingleTabView, { BrowserSingleTabViewAPI, BrowserSingleTabViewProps } from "./BrowserSingleTabView";
 import { MC } from "../mc";
 

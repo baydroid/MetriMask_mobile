@@ -10,7 +10,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { TimeoutHandler } from "usetimeout-react-hook";
 import UserInactivity, { UserInactivityAPI } from "react-native-user-inactivity";
 
-import { BIG_0, MC, MRX_DECIMALS } from "../mc";
+import { BIG_0, MC, MRX_DECIMALS, DEFAULT_INACTIVITY_TIMEOUT_MILLIS } from "../mc";
 import BrowserView from "./BrowserView";
 import WalletView, { WALLET_SCREENS, WalletViewAPI } from "./WalletView";
 import { commonStyles, handleHardwareBackPressNoExit, handleHardwareBackPress, formatSatoshi, BurgerlessTitleBar, MenuOption, COLOR_WHITE, COLOR_BLACK, COLOR_GREEN_WASH, COLOR_DARK_PURPLE } from "./common";
@@ -33,8 +33,6 @@ const mainStyles = StyleSheet.create
     });
 
 
-
-export const DEFAULT_INACTIVITY_TIMEOUT_MILLIS = 15*60*1000;
 
 const TIMEOUT_HANDLER : TimeoutHandler<any> = // <any> instead of <BGTimerInfo> for compatability with UserInactivity.timeoutHandler which is a TimeoutHandler<unknown>
     {
@@ -377,8 +375,9 @@ export default function MainView() : JSX.Element
 
         function renderMessages() : JSX.Element[]
             {
+            let i : number = 1;
             let elems : JSX.Element[] = Array(emergencyExitMsgs.length);
-            for (const msg of emergencyExitMsgs) elems.push(<Text style={{ color: COLOR_BLACK }}>{ msg }</Text>);
+            for (const msg of emergencyExitMsgs) elems.push(<Text key={ "N" + i++ } style={{ color: COLOR_BLACK }}>{ msg }</Text>);
             return elems;
             }
 
@@ -474,28 +473,41 @@ export default function MainView() : JSX.Element
             if (!isInitializing) props.navigation.navigate(screen);
             }
 
-        type DrawerItemProps =
-            {
-            label   : string;
-            onPress : () => any;
-            }
-
         function renderBalance(am : AccountManager) : JSX.Element | null
             {
-            const bal : bigint = am.current.wm.balanceSat;
-            if (bal < BIG_0)
-                return null;
-            else
-                return(
+            function renderCenteredText(text : string) : JSX.Element
+                {
+                return (
                     <>
-                        <View style={{ height: 6 }}/>
-                        <View style={ commonStyles.rowContainerV2 }>
+                        <View style={ commonStyles.rowContainer }>
                             <View style={{ flex: 1 }}/>
-                            <Text style={{ color: COLOR_BLACK }}>{ formatSatoshi(bal, MRX_DECIMALS) + " MRX" }</Text>
+                            <Text style={{ color: COLOR_BLACK }}>{ text }</Text>
                             <View style={{ flex: 1 }}/>
                         </View>
                     </>
-                    )
+                    );
+                }
+
+            const sat : bigint = am.current.wm.balanceSat;
+            const usd : string = am.current.wm.balanceUSD;
+            if (sat < BIG_0)
+                return null;
+            else if (usd)
+                return (
+                    <>
+                        <View style={{ height: 6 }}/>
+                        { renderCenteredText(formatSatoshi(sat, MRX_DECIMALS) + " MRX") }
+                        <View style={{ height: 6 }}/>
+                        { renderCenteredText("$ " + usd) }
+                    </>
+                    );
+            else
+                return (
+                    <>
+                        <View style={{ height: 6 }}/>
+                        { renderCenteredText(formatSatoshi(sat, MRX_DECIMALS) + " MRX") }
+                    </>
+                    );
             }
 
         if (isLoggedIn)
@@ -506,7 +518,7 @@ export default function MainView() : JSX.Element
                     <BurgerlessTitleBar title="MetriMask"/>
                     <View style={ commonStyles.horizontalBar }/>
                     <View style={{ height: 12 }}/>
-                    <View style={ commonStyles.rowContainerV2 }>
+                    <View style={ commonStyles.rowContainer }>
                         <View style={{ flex: 1 }}/>
                         <Text style={{ color: COLOR_BLACK }}>{ am.current.accountName + " on " + am.current.wm.ninfo.name }</Text>
                         <View style={{ flex: 1 }}/>

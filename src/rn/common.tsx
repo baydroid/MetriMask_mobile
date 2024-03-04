@@ -46,7 +46,7 @@ export const commonStyles = StyleSheet.create
         marginLeft: 24,
         marginRight: 24,
         },
-    rowContainerV2:
+    rowContainer:
         {
         flexDirection: "row",
         margin: 0,
@@ -260,7 +260,7 @@ export function SimpleDoublet(props : SimpleDoubletProps) : JSX.Element
     if (props.icon)
         {
         return (
-            <View style={ commonStyles.rowContainerV2 }>
+            <View style={ commonStyles.rowContainer }>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
                     <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
@@ -312,7 +312,7 @@ export function AddressQuasiDoublet(props : AddressQuasiDoubletProps) : JSX.Elem
     if (props.icon)
         {
         return (
-            <View style={ commonStyles.rowContainerV2 }>
+            <View style={ commonStyles.rowContainer }>
                 <View style={ commonStyles.columnContainerV2 }>
                     <View style={ commonStyles.flex1 }/>
                     <Text style={{ color: COLOR_MIDDLE_GREY }}>{ props.title }</Text>
@@ -353,7 +353,7 @@ export type DoubleDoubletProps =
 export function DoubleDoublet(props : DoubleDoubletProps) : JSX.Element
     {
     return (
-        <View style={ commonStyles.rowContainerV2 }>
+        <View style={ commonStyles.rowContainer }>
             <View style={ commonStyles.flex1 }>
                 <SimpleDoublet title={ props.titleL } text={ props.textL } />
                 <View style={ commonStyles.flex1 } />
@@ -423,7 +423,7 @@ export type SimpleTextInputPairProps =
 export function SimpleTextInputPair(props : SimpleTextInputPairProps) : JSX.Element
     {
     return (
-        <View style={ commonStyles.rowContainerV2 }>
+        <View style={ commonStyles.rowContainer }>
             <View style={ commonStyles.flex1 }>
                 <SimpleTextInput { ...props.left } />
             </View>
@@ -477,7 +477,7 @@ export type SimpleButtonPairProps =
 export function SimpleButtonPair(props : SimpleButtonPairProps) : JSX.Element
     {
     return (
-        <View style={ commonStyles.rowContainerV2 }>
+        <View style={ commonStyles.rowContainer }>
             <View style={ commonStyles.flex1 }>
                 <SimpleButton { ...props.left } />
             </View>

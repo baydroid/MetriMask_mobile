@@ -97,7 +97,7 @@ export class TransactionLog
                     {
                     resolve(this.canLoadMoreTxs);
                     })
-                .catch(reject);
+             .catch(reject);
                 }
 
             if (!this.txArray.length)
@@ -106,7 +106,7 @@ export class TransactionLog
                     {
                     resolve(moreTxsAvailable);
                     })
-                .catch(reject);
+             .catch(reject);
                 }
             else if (!this.atEndOfTxReads && this.txArray.length < this.maxLogLength)
                 {
@@ -114,7 +114,7 @@ export class TransactionLog
                     {
                     addNewest();
                     })
-                .catch(reject);
+             .catch(reject);
                 }
             else
                 addNewest();

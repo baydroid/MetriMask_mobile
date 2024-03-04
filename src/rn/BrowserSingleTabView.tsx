@@ -216,9 +216,9 @@ export default function BrowserSingleTabView(props : BrowserSingleTabViewProps) 
     function WebProgressBar() : JSX.Element
         {
         if (showLoading)
-            return (<ProgressBar style = {{ height: 3 }} indeterminate color ={ COLOR_DARK_PURPLE }/>);
+            return (<ProgressBar style={{ height: 3 }} indeterminate color={ COLOR_DARK_PURPLE }/>);
         else
-            return (<ProgressBar style = {{ height: 3 }} progress = { 1 } color ={ COLOR_DARK_PURPLE }/>);
+            return (<ProgressBar style={{ height: 3 }} progress={ 1 } color={ COLOR_DARK_PURPLE }/>);
         }
 
     const BLANK_SOURCE = { html: "<!doctype html><html><head></head><body></body></html>" };

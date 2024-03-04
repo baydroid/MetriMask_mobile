@@ -4,10 +4,10 @@ import { IconButton, TouchableRipple } from 'react-native-paper';
 import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 
 import { MC } from "../mc";
-import BrowserAllTabsView, { BrowserAllTabsViewAPI, browserSetInitialUrl, BrowserTabContextBase } from "./BrowserAllTabsView";
-import { BrowserTabContext } from "../BrowserTabContext";
+import BrowserAllTabsView, { BrowserAllTabsViewAPI, BrowserTabContextBase } from "./BrowserAllTabsView";
+import { BrowserTabContext } from "./BrowserTabContext";
 import { COLOR_BLACK, COLOR_DARK_PURPLE, COLOR_DARKISH_PURPLE, COLOR_PURPLE_RIPPLE, COLOR_WHITE, commonStyles, MenuOption, COLOR_LIGHT_PURPLE, COLOR_MIDDLE_GREY } from "./common";
-import { WebRefList, WebRef, WebRefStorageObj } from "../WebRefList";
+import { WebRefList, WebRef, WebRefStorageObj } from "./WebRefList";
 import { MRXStorage } from "../MRXStorage";
 import { searchEngineCount, searchEngineIndex, searchEngineName, setSearchEngine } from "../parseBrowserUrl";
 

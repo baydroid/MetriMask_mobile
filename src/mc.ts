@@ -8,25 +8,27 @@ import { randomBytes } from 'react-native-randombytes';
 import { validate } from "mrx-address-validation";
 
 import { BrowserAllTabsViewAPI, browserSetInitialUrl, BrowserTabContextBase } from "./rn/BrowserAllTabsView";
-import { BrowserTabContext } from "./BrowserTabContext";
+import { BrowserTabContext } from "./rn/BrowserTabContext";
 import { MRXStorage, SALT_BYTE_LEN } from "./MRXStorage";
-import { MainViewAPI, DEFAULT_INACTIVITY_TIMEOUT_MILLIS, WorkFunctionResult } from './rn/MainView';
+import { MainViewAPI, WorkFunctionResult } from './rn/MainView';
 import { ContractCallParams } from './WalletManager';
 import { isMnsName } from './nameUtils';
 
 
 
-export const DEFAULT_INITIAL_URL       = "https://www.metrixcoin.com/";
-export const MRX_DECIMALS              = 8;
-export const SATOSHIS_PER_MRX          = 1e8;
-export const DEFAULT_GAS_LIMIT         = 250000;
-export const DEFAULT_GAS_PRICE_MRX     = 0.00005000;
-export const DEFAULT_GAS_PRICE_SATOSHI = DEFAULT_GAS_PRICE_MRX*SATOSHIS_PER_MRX;
-export const BIG_0                     = BigInt(0);
+const DEBUG_MODE                               = false;
+
+export const DEFAULT_INACTIVITY_TIMEOUT_MILLIS = 15*60*1000;
+export const DEFAULT_INITIAL_URL               = "https://www.metrixcoin.com/";
+export const MRX_DECIMALS                      = 8;
+export const SATOSHIS_PER_MRX                  = 1e8;
+export const DEFAULT_GAS_LIMIT                 = 250000;
+export const DEFAULT_GAS_PRICE_MRX             = 0.00005000;
+export const DEFAULT_GAS_PRICE_SATOSHI         = DEFAULT_GAS_PRICE_MRX*SATOSHIS_PER_MRX;
+export const BIG_0                             = BigInt(0);
 
 
 
-const DEBUG_MODE             = false;
 const STORAGE_VERSION_NUMBER = 1;
 const CH_0                   = "0".charCodeAt(0);
 const CH_9                   = "9".charCodeAt(0);
@@ -281,13 +283,22 @@ export class MC // MC: Master of Ceremonies -- the place where the different par
         MC.messageArray.push(">" + Date.now().toString() + ": " + message);
         }
 
+    public static errorFunc(extraInfo : string | null = null) : (e : any) => void
+        {
+        return (e : any) : void =>
+            {
+            if (extraInfo == null) extraInfo = "No Information Provided";
+            MC.raiseError(e, extraInfo!);
+            };
+        }
+
     public static raiseError(e : any, extraInfo : string) : void
         {
         if (DEBUG_MODE)
             {
             console.log(`*****   START   MC.raiseError() >> ${ extraInfo }`);
             console.log(MC.errorToString(e));
-            console.log(e);
+            console.error(e);
             if (MC.messageArray.length > 1)
                 {
                 console.log(`*****   MESSAGES`);

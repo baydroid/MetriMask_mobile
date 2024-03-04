@@ -111,8 +111,8 @@ export function QRAddressScanView(props : QRAddressScanViewProps) : JSX.Element
             }
 
         const footerStyle : object = Platform.OS == "ios"
-            ? { ...commonStyles.rowContainerV2, paddingBottom: 24, paddingTop: 24, backgroundColor: "#000000" }
-            : { ...commonStyles.rowContainerV2, marginBottom: 24 };
+            ? { ...commonStyles.rowContainer, paddingBottom: 24, paddingTop: 24, backgroundColor: "#000000" }
+            : { ...commonStyles.rowContainer, marginBottom: 24 };
         return (
             <View style={ footerStyle }>
                 <View style={{ width: 24 }}/>

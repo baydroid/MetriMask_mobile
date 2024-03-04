@@ -3,7 +3,7 @@ import { isEmpty, split } from 'lodash';
 
 import { AccountManager } from "./AccountManager";
 import { MC, DEFAULT_INITIAL_URL } from './mc';
-import { DEFAULT_INACTIVITY_TIMEOUT_MILLIS } from "./rn/MainView";
+import { DEFAULT_INACTIVITY_TIMEOUT_MILLIS } from "./mc";
 import { WebHistoryList, WebFavouritesList } from "./rn/BrowserView";
 
 

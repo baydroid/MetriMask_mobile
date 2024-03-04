@@ -6,9 +6,10 @@ import { Insight, Wallet as MRXWallet, WalletRPCProvider } from "metrixjs-wallet
 import { Mweb3 } from "mweb3";
 
 import { MC, BIG_0, SATOSHIS_PER_MRX, MRX_DECIMALS, DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE_MRX } from "./mc";
-import { NetInfo } from "./NetInfo";
+import { NET_ID, NetInfo } from "./NetInfo";
 import { mrc20TokenABI } from "./mrc20TokenABI";
 import { SerializableMRC20Token } from "./MRC20";
+import { USDPriceFinder } from "./USDPriceFinder";
 
 
 
@@ -117,11 +118,14 @@ export class WalletManager
     private ownWallet : MRXWallet | null = null;
     private walletRpcProvider : WalletRPCProvider | null = null;
     private walletMweb3 : Mweb3Main | null = null;
+    private priceFinder : USDPriceFinder = USDPriceFinder.getFinder();
     private walletAddress : string = "";
     private nnsNameByReversal : string = "";
-    private lastBalanceSat : bigint = BigInt(-10);
+    private lastBalanceSat : bigint = BigInt(-1);
+    private lastBalanceUSD : string = "";
     private lastBalanceSatDelta : bigint = BIG_0;
-    private lastUnconfirmedBalanceSat : bigint = BigInt(-10);
+    private lastBalanceUSDChanged : boolean = false;
+    private lastUnconfirmedBalanceSat : bigint = BigInt(-1);
     private lastUnconfirmedBalanceSatDelta : bigint = BIG_0;
     private lastTxCount : number = 0;
     private lastUnconfirmedTxCount : number = 0;
@@ -142,6 +146,7 @@ export class WalletManager
     public get mnsNmae()                    : string            { return this.nnsNameByReversal;              }
     public get balanceSat()                 : bigint            { return this.lastBalanceSat;                 }
     public get balanceSatDelta()            : bigint            { return this.lastBalanceSatDelta;            }
+    public get balanceUSDChanged()          : boolean           { return this.lastBalanceUSDChanged;          }
     public get unconfirmedBalanceSat()      : bigint            { return this.lastUnconfirmedBalanceSat;      }
     public get unconfirmedBalanceSatDelta() : bigint            { return this.lastUnconfirmedBalanceSatDelta; }
     public get txCount()                    : number            { return this.lastTxCount;                    }
@@ -149,6 +154,12 @@ export class WalletManager
     public get txCountDelta()               : number            { return this.lastTxCountDelta;               }
     public get unconfirmedTxCountDelta()    : number            { return this.lastUnconfirmedTxCountDelta;    }
     public get whenUpdated()                : number            { return this.lastUpdated;                    }
+
+    public get balanceUSD() : string
+        {
+        if (this.lastBalanceUSD == "" && this.ninfo.id == NET_ID.MAIN && this.lastBalanceSat >= BIG_0) this.lastBalanceUSD = this.priceFinder.satoshiToUSD(this.lastBalanceSat);
+        return this.lastBalanceUSD;                 
+        }
 
     public createFromMnemonic(mnemonic : string, passwordHash : string) : string
         {
@@ -205,9 +216,11 @@ export class WalletManager
         this.walletAddress = this.ownWallet!.keyPair.getAddress();
         this.walletRpcProvider = new WalletRPCProvider(this.ownWallet!);
         this.walletMweb3 = new Mweb3(this.walletRpcProvider);
-        this.lastBalanceSat = BigInt(-10);
+        this.lastBalanceSat = BigInt(-1);
         this.lastBalanceSatDelta = BIG_0;
-        this.lastUnconfirmedBalanceSat = BigInt(-10);
+        this.lastBalanceUSD = "";
+        this.lastBalanceUSDChanged = false;
+        this.lastUnconfirmedBalanceSat = BigInt(-1);
         this.lastUnconfirmedBalanceSatDelta = BIG_0;
         this.lastTxCount = 0;
         this.lastUnconfirmedTxCount = 0;
@@ -216,34 +229,7 @@ export class WalletManager
         this.lastUpdated = 0;
         }
 
-    public loadInfoAndMns() : Promise<Insight.IGetInfo | null>
-        {
-        return new Promise<Insight.IGetInfo | null>((resolve : (info : Insight.IGetInfo | null) => any, reject : (e : any) => any) : void =>
-            {
-            let outCount : number = 2;
-            let rejected : boolean = false;
-            let infoReported : Insight.IGetInfo | null = null;
-
-            function complete(e : any) : void
-                {
-                if (!rejected)
-                    {
-                    if (e !== null)
-                        {
-                        rejected = true;
-                        reject(e);
-                        }
-                    else if (--outCount == 0)
-                        resolve(infoReported);
-                    }
-                }
-
-            this.getInfo().then((info : Insight.IGetInfo | null) : void => { infoReported = info; complete(null); }).catch(complete);
-            this.reverseResolveMnsName().then((label : string) : void => complete(null)).catch(complete);
-            });
-        }
-
-    private reverseResolveMnsName() : Promise<string>
+    public reverseResolveMnsName() : Promise<string>
         {
         return new Promise<string>((resolve : (label : string) => any, reject : (e : any) => any) : void =>
             {
@@ -276,6 +262,12 @@ export class WalletManager
                     const balanceSat = BigInt(info.balanceSat);
                     this.lastBalanceSatDelta = this.lastBalanceSat - balanceSat;
                     this.lastBalanceSat = balanceSat;
+                    if (this.ninfo.id == NET_ID.MAIN)
+                        {
+                        const balanceUSD : string = this.priceFinder.satoshiToUSD(balanceSat);
+                        this.lastBalanceUSDChanged = this.lastBalanceUSD != balanceUSD;
+                        this.lastBalanceUSD = balanceUSD;
+                        }
                     const unconfirmedBalanceSat = BigInt(info.unconfirmedBalanceSat);
                     this.lastUnconfirmedBalanceSatDelta = this.lastUnconfirmedBalanceSat - unconfirmedBalanceSat;
                     this.lastUnconfirmedBalanceSat = unconfirmedBalanceSat;
